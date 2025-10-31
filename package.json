@@ -1,0 +1,31 @@
+{
+  "name": "playbook",
+  "version": "1.0.0",
+  "description": "Knowledge Transer Chat-Bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "knowledge",
+    "playbook",
+    "transfer",
+    "googledrive",
+    "llm",
+    "chatbot"
+  ],
+  "author": "Rohit Nair",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.9.2",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
