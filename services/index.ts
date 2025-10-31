@@ -3,7 +3,7 @@ import { getEmbeddings } from './model/embeddings.model';
 import { initialiseChromaDB, updateCollections } from './utils/chroma.utils';
 import { chunkText } from './utils/chunk.utils';
 import readline from 'readline-sync';
-import { Responder } from './model/responder';
+import Responder from './model/responder';
 
 // If modifying these scopes, delete token.json.
 const main = async () => {
@@ -38,8 +38,8 @@ const main = async () => {
         console.log('GoodBye')
         break;
       }
-
-      const answer = await Responder(query);
+      const responder = new Responder(query);
+      const answer = await responder.search();
       console.log(`Bot: ${answer}`);
     }
   } catch(e) {

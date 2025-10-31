@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "NODE_ENV=development nodemon",
     "update:registry": "npm config set registry https://registry.npmjs.org/",
-    "chroma:start": "chroma run"
+    "chroma:start": "chroma run",
+    "db:reset": "rm -rf prisma/dev.db prisma/migrations && npx prisma migrate dev --name init"
   },
   "keywords": [
     "knowledge",
@@ -22,13 +23,18 @@
   "dependencies": {
     "@chroma-core/default-embed": "^0.1.8",
     "@google-cloud/local-auth": "^3.0.1",
+    "@prisma/client": "^6.18.0",
+    "@types/cors": "^2.8.19",
     "chromadb": "^3.1.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "google-auth-library": "^10.5.0",
     "googleapis": "^164.1.0",
     "openai": "^6.7.0",
-    "readline-sync": "^1.4.10"
+    "prisma": "^6.18.0",
+    "readline-sync": "^1.4.10",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
