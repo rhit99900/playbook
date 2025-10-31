@@ -1,0 +1,9 @@
+{
+  "watch": [
+    "services", 
+    "package.json"
+  ],
+  "ext": "ts",
+  "ignore": ["src/**/*.spec.ts"],
+  "exec": "ts-node ./services/index.ts"
+}
