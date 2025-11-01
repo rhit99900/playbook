@@ -8,7 +8,8 @@
     "dev": "NODE_ENV=development nodemon",
     "update:registry": "npm config set registry https://registry.npmjs.org/",
     "chroma:start": "chroma run",
-    "db:reset": "rm -rf prisma/dev.db prisma/migrations && npx prisma migrate dev --name init"
+    "db:reset": "rm -rf prisma/dev.db prisma/migrations && npx prisma migrate dev --name init",
+    "db:migrate": "npx prisma migrate dev"
   },
   "keywords": [
     "knowledge",

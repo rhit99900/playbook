@@ -15,4 +15,4 @@ export const CHUNK_OVERLAP = 100;
 
 export const CHROMA_COLLECTION_NAME = 'google_drive_playbook';
 
-export const PORT = process.env.PORT;
+export const PORT = Number(process.env.PORT!);
