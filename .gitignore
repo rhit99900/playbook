@@ -4,3 +4,4 @@ chroma/
 .env
 /services/generated/
 .lh
+prisma/dev.db
