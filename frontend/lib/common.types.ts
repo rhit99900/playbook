@@ -31,3 +31,41 @@ export type ResponderStatusEvent = {
 export type ResponderAnswerEvent = {
   answer: string | null;
 };
+
+export type AuthUser = {
+  id: number;
+  email: string;
+  username: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AuthSession = {
+  user: AuthUser;
+  token: string;
+};
+
+export type AuthApiResponse = {
+  success: boolean;
+  user: AuthUser;
+  token: string;
+  message?: string;
+};
+
+export type RegisterPayload = {
+  email: string;
+  username: string;
+  password: string;
+};
+
+export type LoginPayload = {
+  identifier: string;
+  password: string;
+};
+
+
+export type NavigationMenuType = {
+  title: string;
+  href: string;
+  description?: string;
+}
