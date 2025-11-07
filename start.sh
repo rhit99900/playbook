@@ -38,9 +38,9 @@ start_service() {
   echo "$name running (pid $pid)"
 }
 
-start_service "backend" "$ROOT_DIR" npm run dev
-start_service "frontend" "$ROOT_DIR/frontend" npm run dev
-start_service "chromadb" "$ROOT_DIR" npm run chroma:start
+start_service "Backend" "$ROOT_DIR" npm run dev
+start_service "Frontend" "$ROOT_DIR/frontend" npm run dev
+start_service "Chromadb" "$ROOT_DIR" npm run chroma:start
 
 exit_code=0
 for pid in "${PIDS[@]}"; do
