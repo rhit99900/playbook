@@ -1,8 +1,12 @@
 import { ChromaClient } from "chromadb";
-import { CHROMA_COLLECTION_NAME } from "../config";
+import { CHROMA_COLLECTION_NAME, CHROMADB_HOST_URI, CHROMADB_PORT } from "../config";
 import { FileDetails } from "./drive.utils";
 
-const Chroma = new ChromaClient();
+const Chroma = new ChromaClient({
+  host: CHROMADB_HOST_URI,
+  port: CHROMADB_PORT
+});
+
 let DocumentCollection: any;
 
 export type MetaData = {
