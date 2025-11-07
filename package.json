@@ -6,6 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "NODE_ENV=development nodemon",
+    "build": "tsc -p tsconfig.json",
     "update:registry": "npm config set registry https://registry.npmjs.org/",
     "chroma:start": "chroma run",
     "chroma:clean": "ts-node scripts/chroma-clean.ts",
