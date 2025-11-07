@@ -4,6 +4,7 @@ import path from 'path';
 dotenv.config();
 
 export const OPEN_AI_API_KEY = process.env.OPEN_AI_API_KEY;
+export const JWT_SECRET = process.env.JWT_SECRET || 'playbook-dev-secret';
 
 export const CREDENTIALS_PATH = path.join(__dirname, '..', 'credentials.json');
 export const TOKEN_PATH = path.join(__dirname, '..', 'token.json');

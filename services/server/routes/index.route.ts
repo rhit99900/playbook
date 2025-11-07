@@ -1,7 +1,8 @@
-import { NextFunction, Router } from "express";
+import { Router } from "express";
 import { Routes } from "../../types/route.types";
 import StatusRoute from "./status.route";
 import PlaybookController from "../controllers/index.controller";
+import AuthRoute from "./auth.route";
 
 class PlaybookRoutes {
   public path = '';
@@ -9,7 +10,8 @@ class PlaybookRoutes {
 
   constructor() {
     this.iniliaseRoutes([
-      new StatusRoute()
+      new StatusRoute(),
+      new AuthRoute()
     ])
   }
 

@@ -36,6 +36,7 @@ Create a `.env` in the repo root. Required keys:
 | `OPEN_AI_API_KEY` | OpenAI API key with GPT-3.5+ access |
 | `PORT` | Express server port (defaults to `8080` in examples) |
 | `DATABASE_URL` | Prisma connection string (SQLite by default) |
+| `JWT_SECRET` | Secret string used to sign authentication tokens |
 
 The frontend reads `API_BASE_URI` from `frontend/.env` (falls back to `http://localhost:8080`).
 
@@ -131,6 +132,8 @@ Then trigger ingestion again.
 | `GET /files` | Paginated list of indexed files (`skip`, `limit` query params) |
 | `DELETE /files` | Removes Prisma file records (primarily for maintenance) |
 | `POST /files/index` | Triggers document ingestion (all files or provided `fileIds`) |
+| `POST /auth/register` | Creates a new user (requires `email`, `username`, `password`) |
+| `POST /auth/login` | Authenticates an existing user (`identifier` = email or username, plus `password`) |
 | `GET /respond` | SSE endpoint: `?query=question` |
 | `POST /respond` | Alternative SSE entry point (expects JSON body `{ "query": "..." }`) |
 | `GET /health` | Simple readiness probe |
