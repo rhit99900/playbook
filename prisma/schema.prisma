@@ -15,11 +15,11 @@ datasource db {
 }
 
 model Files {
-  id      Int    @id @default(autoincrement())
-  title   String
-  content String?
-  file_id String?
-  file_url String?
+  id          Int    @id @default(autoincrement())
+  title       String
+  content     String?
+  file_id     String? @unique
+  file_url    String?
   created_at  DateTime @default(now())
   is_embedded Boolean @default(false)
 }
