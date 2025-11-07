@@ -1,41 +1,99 @@
 import { DocumentCollection, MetaData } from "../utils/chroma.utils";
 import { getEmbeddings } from "./embeddings.model";
-import openai from "./openai"
+import openai from "./openai";
+
+export type SourceAttribution = {
+  documentId: string | null | undefined;
+  chunkIndex: number;
+  chunk: string;
+  distance: number | null;
+};
+
+export type RetrievalResult = {
+  context: string;
+  chunks: string[];
+  sources: SourceAttribution[];
+};
+
+export type ResponderResult = RetrievalResult & {
+  answer: string | null;
+};
 
 class Responder {
 
   private query: string;
-  embeddings: number[][] | undefined;
+  private embeddings: number[][] | undefined;
+  private embeddingsPromise: Promise<number[][]> | null = null;
 
   constructor(query: string) {
     this.query = query;
-    this.emberQuery();
   }
 
-  private emberQuery = async () => {
-    this.embeddings = await getEmbeddings([this.query]);
+  private async ensureEmbeddings(): Promise<number[][]> {
+    if (!this.embeddingsPromise) {
+      this.embeddingsPromise = getEmbeddings([this.query]);
+    }
+    this.embeddings = await this.embeddingsPromise;
+    return this.embeddings;
   }
 
-  public search = async () => {
-    const results = await DocumentCollection.query({
-      queryEmbeddings: this.embeddings,
-      nResults: 3,
+  private assertCollection() {
+    if (!DocumentCollection) {
+      throw new Error('Document collection has not been initialised');
+    }
+    return DocumentCollection;
+  }
+
+  public retrieveDocuments = async (nResults: number = 3): Promise<RetrievalResult> => {
+    const embeddings = await this.ensureEmbeddings();
+    const collection = this.assertCollection();
+
+    const results = await collection.query({
+      queryEmbeddings: embeddings,
+      nResults,
       include: ['documents', 'metadatas', 'distances']
     });
 
-    const context = results.documents[0].join('\n--\n');
-    const source = results.metadatas[0].map((meta: MetaData | null) => `Document ID: ${meta?.id}, Chunk Index: ${meta?.chunkIndex}`).join('; ');
-    
-    console.log(context);
-    console.log(`Source(s): ${source}`);
-    console.log('-------------------------\n');
-    
-    const response = await this.queryLLM(context);
-    return response;
+    const documents = results?.documents?.[0] ?? [];
+    const metadatas = results?.metadatas?.[0] ?? [];
+    const distances = results?.distances?.[0] ?? [];
+
+    const sources: SourceAttribution[] = documents.map((chunk: string, index: number) => {
+      const metadata = metadatas[index] as MetaData | null | undefined;
+      const distance = typeof distances[index] === 'number' ? distances[index] : null;
+      return {
+        documentId: metadata?.id,
+        chunkIndex: metadata?.chunkIndex ?? index,
+        chunk,
+        distance
+      };
+    });
+
+    return {
+      context: documents.join('\n--\n'),
+      chunks: documents,
+      sources
+    };
   }
 
-  private queryLLM = async (context: string) => {
-    console.log(`Asking LLM to generate resposne`);
+  public answerFromContext = async (context: string): Promise<string | null> => {
+    if (!context) {
+      return 'Unable to find relevant information in the indexed documents.';
+    }
+    return this.queryLLM(context);
+  }
+
+  public search = async (): Promise<ResponderResult> => {
+    const retrieval = await this.retrieveDocuments();
+    const answer = await this.answerFromContext(retrieval.context);
+    return {
+      ...retrieval,
+      answer
+    };
+  }
+
+  private queryLLM = async (context: string): Promise<string | null> => {
+    console.log(`Asking LLM to generate response`);
     try {
       const chatCompletion = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
