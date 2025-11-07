@@ -29,35 +29,42 @@ class Builder {
     await initialiseChromaDB();
   }
 
-  public process = async () => {
+  public process = async (fileIds?: string[]) => {
+    await this.initiliaseChroma();
     await this.authenticate();
-    if(this.is_drive_authenticated) {
-      try {      
-        const files = await listFiles(this.auth);
-        if(files) {
-          await this.createFileEmbeddings(files);
-        }
-      } catch(e: unknown) {
-        // @ts-ignore
-        console.error(`This doesn't seem to be working!`, e?.message);
+    if(!this.is_drive_authenticated) {
+      console.log(`Google Drive Service Account isn't authenticated correctly. Please check the configuration.`);
+      return;
+    }
+
+    try {
+      const files = await listFiles(this.auth, {
+        fileIds: fileIds && fileIds.length ? fileIds : undefined
+      });
+      if(!files || !files.length) {
+        console.warn('No files returned from Google Drive for processing');
+        return;
       }
-    } else {
-      console.log(`Google Drive Service Account isn't authenticated correctly. Please check the configuration.`);      
+      await this.createFileEmbeddings(files);
+    } catch(e: unknown) {
+      // @ts-ignore
+      console.error(`Failed to process documents`, e?.message);
+      throw e;
     }
   }
 
-  private createFileEmbeddings = async (files: FileDetails[] | undefined) => {
-    const promises = [];
-    if(!files) throw new Error('No files to process');
-    for(const file of files) {
-      promises.push(this.processDocument(file));
+  private createFileEmbeddings = async (files: FileDetails[]) => {
+    if(!files.length) {
+      console.warn('No files to process');
+      return;
     }
 
-    Promise.allSettled(promises).then(() => {
-      console.log('Documents Processed')
-    }).catch((e: any) => {
-      console.info(`Error processing documents`);
-    })
+    const jobs = files
+      .filter((file) => Boolean(file?.id))
+      .map((file) => this.processDocument(file));
+
+    await Promise.allSettled(jobs);
+    console.log('Documents Processed');
   }
 
   private processDocument = async (file: FileDetails) => {    

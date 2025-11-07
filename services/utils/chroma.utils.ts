@@ -29,8 +29,8 @@ const updateCollections = async (chunks: string[], file: FileDetails, embeddings
     await DocumentCollection.add({
       ids: ids,
       embeddings: embeddings,
-      document: chunks,
-      metadata: metadata
+      documents: chunks,
+      metadatas: metadata
     })
   } catch(e) {
     console.error(`Failed to update data`);

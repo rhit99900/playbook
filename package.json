@@ -8,6 +8,7 @@
     "dev": "NODE_ENV=development nodemon",
     "update:registry": "npm config set registry https://registry.npmjs.org/",
     "chroma:start": "chroma run",
+    "chroma:clean": "ts-node scripts/chroma-clean.ts",
     "db:migrate": "npx prisma migrate dev",
     "db:migrate:reset": "npx prisma migrate reset"
   },

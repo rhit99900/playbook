@@ -5,11 +5,19 @@ import Prisma from "../utils/prisma.utils";
 class Documents {
 
   public createDocument = async (file: FileDetails):Promise<any> => {
+    if(!file.id) return;
     try {
-      const document = await Prisma.files.create({
-        data: {
+      const document = await Prisma.files.upsert({
+        where: {
+          file_id: file.id
+        },
+        update: {
+          title: file.name || 'Untitled',
+          file_url: file.webViewLink || ''
+        },
+        create: {
           file_id: file.id,
-          file_url: file.webViewLink,
+          file_url: file.webViewLink || '',
           title: file.name || 'Untitled',
           content: '',
           is_embedded: false
@@ -22,26 +30,29 @@ class Documents {
   }
 
   public updateDocument = async(file: FileDetails, data: any):Promise<any> => {
+    if(!file.id) return;
     try {
-      const f = await Prisma.files.upsert({
-        // @ts-ignore
+      const document = await Prisma.files.upsert({
         where: {
-          file_id: file.id! as string
+          file_id: file.id
         },
         update: {
-          is_embedded: data.is_embedded,
-          file_url: data.file_url,
+          is_embedded: data.is_embedded ?? false,
+          file_url: data.file_url || file.webViewLink || '',
+          title: file.name || 'Untitled',
+          content: data.content || ''
         },
         create: {
           file_id: file.id,
-          file_url: data.file_url,
+          file_url: data.file_url || file.webViewLink || '',
           title: file.name || 'Untitled',
-          content: '',
-          is_embedded: data.is_embedded
+          content: data.content || '',
+          is_embedded: data.is_embedded ?? false
         }
-      });     
+      });
+      return document;
     } catch(e) {
-
+      console.error(`Failed to update document metadata for file ${file.id}`);
     }
   }
 

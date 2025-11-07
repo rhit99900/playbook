@@ -29,6 +29,11 @@ class PlaybookRoutes {
       PlaybookController.deleteFiles
     )
 
+    this.router.post(
+      `${this.path}/files/index`,
+      PlaybookController.indexFiles
+    )
+
     this.router.get(
       `${this.path}/respond`,
       PlaybookController.streamResponse
