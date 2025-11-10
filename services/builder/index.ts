@@ -9,11 +9,6 @@ class Builder {
 
   constructor() {   
     console.info(' --- Builder Initialised --- ');
-    this.initiliaseChroma().then(() => {
-      console.info('ChromaDB Initialised');
-    }).catch((e: any) => {
-      console.error('Failed to initialise ChromaDB. Please check if the services are up and running');
-    });
   }
 
   private authenticate = async ():Promise<void> => {
@@ -26,7 +21,12 @@ class Builder {
   }
 
   private initiliaseChroma = async ():Promise<void> => {
-    await initialiseChromaDB();
+    try {
+      await initialiseChromaDB();
+      console.info('ChromaDB Initialised');
+    } catch(e: any) {
+      console.error('Failed to initialise ChromaDB. Please check if the services are up and running', e?.message);
+    }
   }
 
   public process = async (fileIds?: string[]) => {
