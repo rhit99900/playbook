@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { buildResponderStreamUrl } from "@/lib/apis";
@@ -152,9 +153,9 @@ const PromptInput = () => {
         {answer && (
           <div className="mt-4 space-y-2">
             <p className="text-xs uppercase text-zinc-500 dark:text-zinc-400">Answer</p>
-            <p className="whitespace-pre-line text-base leading-relaxed text-zinc-900 dark:text-zinc-50">
+            <ReactMarkdown className="markdown-body space-y-4 text-base leading-relaxed text-zinc-900 dark:text-zinc-50">
               {answer}
-            </p>
+            </ReactMarkdown>
           </div>
         )}
         {context && (

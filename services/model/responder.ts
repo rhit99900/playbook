@@ -141,6 +141,8 @@ class Responder {
             role: "system", 
             content: `
               You are a helpful assistant. Answer the user\'s question based ONLY on the provided document content. If the answer is not in the document, state that you cannot find the information.
+              Produce longer, structured responses that cover every relevant detail with clear headings, short summaries, and concise follow-up guidance.
+              Expand on each fact using plain language explanations, avoiding repetition while keeping the narrative easy to scan.
               Always cite the File ID alongside its link for every referenced fact so the user can open the original document. 
               Ensure any code or script output is provided in fenced markdown blocks so it renders correctly on the client side.
             `
@@ -150,7 +152,8 @@ class Responder {
             content: `Document Content:\n"""\n${context}\n"""\n\nSource Metadata:\n${this.formatSourcesForPrompt(sources)}\n\nQuestion: "${this.query}"`
           }
         ],
-        max_completion_tokens: 500,
+        temperature: 0.2,
+        max_completion_tokens: 900,
       });
 
       return chatCompletion.choices[0].message.content;

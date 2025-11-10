@@ -14,15 +14,14 @@ class DocumentProcessor {
       return;
     }
 
-    await DocumentService.createDocument(file);
     const document = await getDocumentContent(auth, file.id!);    
-
     if(document) {
+      await DocumentService.createDocument(file);
       const chunks = chunkText(document);
       const embeddings = await getEmbeddings(chunks);
       await updateCollections(chunks, file, embeddings);
       const result = await DocumentService.updateDocument(file, {
-        content: document,
+        content: document.length,
         is_embedded: true,
         file_url: file.webViewLink
       });

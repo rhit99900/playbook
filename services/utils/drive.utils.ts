@@ -110,7 +110,8 @@ export const getDocumentContent = async (auth: any, id: string) => {
       case 'application/pdf':
         return await getPdfContent(auth, id);
       default:
-        return await exportPlainText(drive, id);
+        return false;
+        // return await exportPlainText(drive, id);
     }
   } catch(e) {
     // @ts-ignore

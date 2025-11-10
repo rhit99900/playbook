@@ -12,6 +12,7 @@ import { RootState } from "@/utils/state/store";
 import { readAuthSession } from "@/utils/auth-storage";
 import { setCredentials, setUserAuthState } from "@/utils/slices/auth";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/lib/utils";
 
 const FilesList = () => {
 
@@ -85,7 +86,7 @@ const FilesList = () => {
                 </Link>
               </ItemContent>
               <ItemContent>{file.is_embedded === true ? 'Yes' : 'No'}</ItemContent>
-              <ItemContent>{new Date(file.created_at).toISOString()}</ItemContent>
+              <ItemContent>{formatDate(file.created_at.toString())}</ItemContent>
             </Item>
           )
         })}
@@ -94,6 +95,11 @@ const FilesList = () => {
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious href="#"/>
+                </PaginationItem>
+                <PaginationItem>
+                  <p className="text-xs">
+                    {skip + limit} of {pageCount}
+                  </p>
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationNext href="#" onClick={() => nextPage()}/>

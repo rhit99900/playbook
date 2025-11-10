@@ -59,6 +59,9 @@ class Documents {
   public getFiles = async (filter: FileSearchFilters):Promise<FileListingResponse> => {
     try {
       const files = await Prisma.files.findMany({
+        where: {
+          is_embedded: true
+        },
         skip: filter.skip || 0,
         take: filter.limit || 10                
       });
