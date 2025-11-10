@@ -19,3 +19,15 @@ export type FileListingResponse = {
   files: FilesParams[] | [],
   count: number;
 }
+
+export type UsersParams = {
+  email: string;
+  username: string;
+  id: number;
+  created_at: Date;
+}
+
+export type UsersList = {
+  users: UsersParams[],
+  count: number;
+}

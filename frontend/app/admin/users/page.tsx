@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getUsers } from "@/lib/apis";
+import { deleteUser, getUsers } from "@/lib/apis";
 import type { RootState } from "@/utils/state/store";
 import { setCredentials, setUserAuthState, signOut } from "@/utils/slices/auth";
 import { readAuthSession } from "@/utils/auth-storage";
@@ -70,8 +70,9 @@ const UserList = () => {
     )
   }
 
-  const deleteUser = (id: number) => {
-
+  const remove = async (id: number) => {
+    await deleteUser(id);
+    await fetchUsersList();
   }
 
   return (
@@ -99,7 +100,7 @@ const UserList = () => {
                     <ItemDescription className="text-xs">Created On: {formatDate(user?.created_at)}</ItemDescription>
                   </ItemContent>
                   <ItemActions>
-                    <Button variant={'outline'} onClick={() => deleteUser(user.id)}>Delete <Trash2Icon /></Button>
+                    <Button variant={'outline'} onClick={() => remove(user.id)}>Delete <Trash2Icon /></Button>
                   </ItemActions>
                 </Item>
               )

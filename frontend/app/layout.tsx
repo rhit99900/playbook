@@ -39,7 +39,9 @@ export default function RootLayout({
             <nav className="w-full">
               <Navigation />
             </nav>
-            {children}
+            <main>
+              {children}
+            </main>
             <footer className="w-full items-center flex justify-center border-t mx-auto text-center text-xs gap-8 py-2">
               <ThemeSwitcher />
             </footer>
