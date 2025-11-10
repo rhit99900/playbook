@@ -46,6 +46,7 @@ const PromptInput = () => {
 
   const startStream = useCallback(() => {
     const trimmedQuery = prompt.trim();
+    setPrompt('');
     if (!trimmedQuery.length) return;
     if (typeof window === 'undefined' || typeof window.EventSource === 'undefined') {
       setErrorMessage('This browser does not support server-sent events.');
@@ -105,7 +106,7 @@ const PromptInput = () => {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
       event.preventDefault();
-      startStream();
+      startStream();      
     }
   };
 
@@ -159,7 +160,7 @@ const PromptInput = () => {
           </div>
         )}
         {context && (
-          <details className="mt-4">
+          <details className="mt-4 text-xs">
             <summary className="cursor-pointer text-sm font-medium text-zinc-700 dark:text-zinc-200">
               View retrieved context
             </summary>
@@ -167,12 +168,12 @@ const PromptInput = () => {
           </details>
         )}
         {sources.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-4 text-xs">
             <p className="text-xs uppercase text-zinc-500 dark:text-zinc-400">Sources</p>
             <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-200">
               {sources.map((source, index) => (
                 <li key={`${source.documentId ?? 'unknown'}-${source.chunkIndex}-${index}`}>
-                  <span className="font-medium">{source.documentId ?? 'Unknown document'}</span>
+                  <span className="font-medium text-xs">{source.documentId ?? 'Unknown document'}</span>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400"> · chunk {source.chunkIndex}</span>
                   {typeof source.distance === 'number' && (
                     <span className="text-xs text-zinc-500 dark:text-zinc-400"> (distance {source.distance.toFixed(3)})</span>
