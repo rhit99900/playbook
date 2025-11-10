@@ -25,15 +25,13 @@ class Users {
   }
 
   private generateToken = (user: SanitizedUser) => {
-    return jwt.sign(
-      {
-        sub: user.id,
-        email: user.email,
-        username: user.username
-      },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    return jwt.sign({
+      sub: user.id,
+      email: user.email,
+      username: user.username
+    }, JWT_SECRET, { 
+      expiresIn: '1h' 
+    });
   }
 
   private async getUserByIdentifier(identifier: string) {
@@ -46,6 +44,39 @@ class Users {
         ]
       }
     });
+  }
+
+  public getUsers = async () => {
+    try {
+      const users = await Prisma.users.findMany({
+        select: {
+          email: true, 
+          username: true,
+          id: true,
+          created_at: true
+        }
+      });
+      const count = await Prisma.users.count();
+      return {
+        users: users,
+        count: count
+      }
+    } catch(e) {
+      throw new Error('Failed to fetch users');
+    }
+  }
+
+  public deleteUser = async (id: number) => {
+    try {
+      await Prisma.users.delete({
+        where: {
+          id: id
+        }
+      });      
+      return true;
+    } catch(e) {
+      throw new Error('Failed to fetch users');
+    }
   }
 
   public register = async (input: RegisterInput) => {
