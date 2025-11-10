@@ -2,11 +2,14 @@ import axios from 'axios';
 import { API_BASE_URI } from './config';
 import { APIResponse, FileDetailsType, AuthApiResponse, AuthSession, LoginPayload, RegisterPayload, AuthUser } from './common.types';
 
-export const fetchFiles = async (skip: number, limit: number):Promise<APIResponse<FileDetailsType[]>> => {
+export const fetchFiles = async (skip: number, limit: number, token: string):Promise<APIResponse<FileDetailsType[]>> => {
   const url = new URL(`files?skip=${skip}&limit=${limit}`,API_BASE_URI).href;
   const data = await axios({
     method: 'get',
-    url: url
+    url: url,
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
   });
   return data.data;
 }
@@ -31,11 +34,9 @@ export const registerUser = async (payload: RegisterPayload, token?: string): Pr
   try {
     const url = new URL('/auth/register', API_BASE_URI).href;
     const { data } = await axios.post<AuthApiResponse>(url, payload, {
-      headers: token
-        ? {
-            Authorization: `Bearer ${token}`
-          }
-        : undefined
+      headers: token ? {
+          Authorization: `Bearer ${token}`
+        } : undefined
     });
     return mapAuthResponse(data);
   } catch(e) {

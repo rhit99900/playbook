@@ -5,6 +5,8 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { buildResponderStreamUrl } from "@/lib/apis";
 import { ResponderAnswerEvent, ResponderContextEvent, ResponderStatusEvent, SourceAttribution } from "@/lib/common.types";
+import { useAppSelector } from "@/utils/state/hooks";
+import { RootState } from "@/utils/state/store";
 
 const parseEvent = <T,>(event: MessageEvent): T | null => {
   try {
@@ -23,6 +25,7 @@ const PromptInput = () => {
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null);
   const [ isStreaming, setIsStreaming ] = useState<boolean>(false);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const session = useAppSelector((state: RootState) => state.auth.session);
 
   const closeStream = useCallback(() => {
     if (eventSourceRef.current) {
@@ -107,19 +110,20 @@ const PromptInput = () => {
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex w-full flex-col gap-3 md:flex-row">
+      <div className="flex w-full flex-col gap-3">
         <div className="flex-1">
           <Textarea
             placeholder="Ask the knowledge base anything..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
-            rows={4}
+            rows={6}
+            className="resize-none h-[100px]"
             aria-label="Ask the assistant a question"
           />
           <p className="mt-1 text-xs text-muted-foreground">Press ⌘/Ctrl + Enter to send</p>
         </div>
-        <div className="flex gap-2 md:flex-col">
+        <div className="flex gap-2 flex-row">
           <Button
             onClick={startStream}
             disabled={!prompt.trim().length || isStreaming}
