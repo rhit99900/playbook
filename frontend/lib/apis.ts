@@ -32,7 +32,7 @@ const mapAuthResponse = (response: AuthApiResponse): AuthSession => {
 
 export const registerUser = async (payload: RegisterPayload, token?: string): Promise<AuthSession> => {
   try {
-    const url = new URL('/auth/register', API_BASE_URI).href;
+    const url = new URL('auth/register', API_BASE_URI).href;
     const { data } = await axios.post<AuthApiResponse>(url, payload, {
       headers: token ? {
           Authorization: `Bearer ${token}`
@@ -45,7 +45,7 @@ export const registerUser = async (payload: RegisterPayload, token?: string): Pr
 };
 
 export const loginUser = async (payload: LoginPayload): Promise<AuthSession> => {
-  const url = new URL('/auth/login', API_BASE_URI).href;
+  const url = new URL('auth/login', API_BASE_URI).href;
   const { data } = await axios.post<AuthApiResponse>(url, payload);
   return mapAuthResponse(data);
 };
