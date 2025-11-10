@@ -6,14 +6,15 @@ import Builder from "../../builder";
 class Playbook {
 
   public getFiles = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    try {      
       const files = await DocumentService.getFiles({
-        skip: req.params.skip ? Number(req.params.skip) : 0,
-        limit: req.params.limit ? Number(req.params.limit): 10
+        skip: req.query.skip ? Number(req.query.skip) : 0,
+        limit: req.query.limit ? Number(req.query.limit): 10
       });
       res.status(200).send({
         success: true,
-        data: files
+        data: files.files || [],
+        count: files.count
       })
     } catch(e) {
       next(e);
@@ -99,7 +100,7 @@ class Playbook {
       });
 
       sendEvent('status', { message: 'Generating answer with OpenAI' });
-      const answer = await responder.answerFromContext(retrieval.context);
+      const answer = await responder.answerFromContext(retrieval.context,retrieval.sources);
       sendEvent('answer', { answer });
       sendEvent('done', { success: true });
     } catch(error) {

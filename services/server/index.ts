@@ -23,7 +23,7 @@ class App {
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cors({
       origin: "*",
-      methods: ['GET','POST'],
+      methods: ['GET','POST','DELETE'],
       credentials: true
     }));
     this.app.use(morgan('common', {

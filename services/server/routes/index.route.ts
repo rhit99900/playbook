@@ -3,6 +3,8 @@ import { Routes } from "../../types/route.types";
 import StatusRoute from "./status.route";
 import PlaybookController from "../controllers/index.controller";
 import AuthRoute from "./auth.route";
+import UserRoute from "./users.route";
+import authenticateRequest from "../middleware/auth.middleware";
 
 class PlaybookRoutes {
   public path = '';
@@ -11,7 +13,8 @@ class PlaybookRoutes {
   constructor() {
     this.iniliaseRoutes([
       new StatusRoute(),
-      new AuthRoute()
+      new AuthRoute(),
+      new UserRoute()
     ])
   }
 
@@ -23,16 +26,25 @@ class PlaybookRoutes {
 
     this.router.get(
       `${this.path}/files`,
+      authenticateRequest,
       PlaybookController.getFiles,
     )
 
     this.router.delete(
       `${this.path}/files`,
+      authenticateRequest,
+      PlaybookController.deleteFiles
+    )
+
+    this.router.delete(
+      `${this.path}/files/:id`,
+      authenticateRequest,
       PlaybookController.deleteFiles
     )
 
     this.router.post(
       `${this.path}/files/index`,
+      authenticateRequest,
       PlaybookController.indexFiles
     )
 
