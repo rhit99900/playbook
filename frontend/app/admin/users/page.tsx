@@ -51,16 +51,15 @@ const UserList = () => {
   }, [session, dispatch, router]);
 
   useEffect(() => {
-    if(authState === 'authorized') {
-      fetchUsersList();
+    if(authState === 'authorized' && session?.token) {
+      fetchUsersList(session?.token);
     }
-  }, [authState])
+  }, [authState, session])
 
-  const fetchUsersList = async () => {
-    const users = await getUsers();
+  const fetchUsersList = async (token?: string) => {
+    const users = await getUsers(token);
     if(users.success) {
       setUsers(users.data);
-
     }
   }
 
@@ -71,8 +70,8 @@ const UserList = () => {
   }
 
   const remove = async (id: number) => {
-    await deleteUser(id);
-    await fetchUsersList();
+    await deleteUser(id, session?.token);
+    await fetchUsersList(session?.token);
   }
 
   return (
