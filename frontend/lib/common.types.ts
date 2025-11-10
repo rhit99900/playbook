@@ -4,12 +4,14 @@ export type FileDetailsType = {
   is_embedded: boolean;
   title: string;
   content?: string;
-  file_uri?: string;
+  file_url?: string;
+  created_at: Date
 }
 
 export type APIResponse<T> = {
   success: boolean;
   data: T
+  count?: number;
 }
 
 export type SourceAttribution = {

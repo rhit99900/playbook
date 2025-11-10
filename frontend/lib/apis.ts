@@ -3,7 +3,6 @@ import { API_BASE_URI } from './config';
 import { APIResponse, FileDetailsType, AuthApiResponse, AuthSession, LoginPayload, RegisterPayload } from './common.types';
 
 export const fetchFiles = async (skip: number, limit: number):Promise<APIResponse<FileDetailsType[]>> => {
-
   const url = new URL(`files?skip=${skip}&limit=${limit}`,API_BASE_URI).href;
   const data = await axios({
     method: 'get',
@@ -48,3 +47,17 @@ export const loginUser = async (payload: LoginPayload): Promise<AuthSession> => 
   const { data } = await axios.post<AuthApiResponse>(url, payload);
   return mapAuthResponse(data);
 };
+
+export const getUsers = async (filters?: any) => {
+  try {
+    const url = new URL('users', API_BASE_URI).href;
+    const { data } = await axios.get(url);
+    if(data.success) {
+      return data.users
+    } else {
+      throw new Error('Failed to fetch users information');
+    }
+  } catch(e) {
+    throw new Error('Failed to fetch user details');
+  }
+}

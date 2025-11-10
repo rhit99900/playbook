@@ -12,6 +12,7 @@ let DocumentCollection: any;
 export type MetaData = {
   id: string | null | undefined;
   chunkIndex: number;
+  fileUrl?: string | null;
 }
 
 const initialiseChromaDB = async () => {
@@ -29,7 +30,11 @@ const initialiseChromaDB = async () => {
 const updateCollections = async (chunks: string[], file: FileDetails, embeddings: any) => {
   try {
     const ids = chunks.map((_,i) => `${file.id}-chunk-${i}`);
-    const metadata: MetaData[] = chunks.map((_,i) => ({ id: file.id, chunkIndex: i}));
+    const metadata: MetaData[] = chunks.map((_,i) => ({
+      id: file.id,
+      chunkIndex: i,
+      fileUrl: file.webViewLink
+    }));
     await DocumentCollection.add({
       ids: ids,
       embeddings: embeddings,

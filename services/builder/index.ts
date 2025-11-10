@@ -9,6 +9,7 @@ class Builder {
 
   constructor() {   
     console.info(' --- Builder Initialised --- ');
+    this.initiliaseChroma();
   }
 
   private authenticate = async ():Promise<void> => {

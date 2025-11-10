@@ -1,4 +1,4 @@
-import { FileSearchFilters } from "../types/common.types";
+import { FileListingResponse, FileSearchFilters } from "../types/common.types";
 import { FileDetails } from "../utils/drive.utils";
 import Prisma from "../utils/prisma.utils";
 
@@ -56,16 +56,20 @@ class Documents {
     }
   }
 
-  public getFiles = async (filter: FileSearchFilters) => {
+  public getFiles = async (filter: FileSearchFilters):Promise<FileListingResponse> => {
     try {
       const files = await Prisma.files.findMany({
         skip: filter.skip || 0,
         take: filter.limit || 10                
       });
-      return files;
+      const count = await Prisma.files.count();
+      return {
+        files: files,
+        count: count
+      };
     } catch(e) {
       console.log('Failed to fetch files');
-      return false;
+      throw new Error('Failed to fetch files');
     }
   }
 
@@ -80,6 +84,24 @@ class Documents {
       return files;
     } catch(e) {
       console.error(`ERROR: Failed to delete files for filter ${JSON.stringify(filter)}`);
+    }
+  }
+
+  public isDocumentEmbedded = async (fileId: string | undefined):Promise<boolean> => {
+    if(!fileId) return false;
+    try {
+      const document = await Prisma.files.findUnique({
+        where: {
+          file_id: fileId
+        },
+        select: {
+          is_embedded: true
+        }
+      });
+      return Boolean(document?.is_embedded);
+    } catch(e) {
+      console.error(`Failed to check embedding status for file ${fileId}`);
+      return false;
     }
   }
 }

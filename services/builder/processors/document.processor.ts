@@ -8,6 +8,11 @@ class DocumentProcessor {
   constructor() {}
 
   public process = async (auth: any, file: FileDetails) => {
+    
+    if(await DocumentService.isDocumentEmbedded(file.id!)) {
+      console.info(`Skipping embedding for ${file.name || file.id} - already embedded`);
+      return;
+    }
 
     await DocumentService.createDocument(file);
     const document = await getDocumentContent(auth, file.id!);    
