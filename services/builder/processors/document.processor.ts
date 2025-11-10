@@ -21,7 +21,7 @@ class DocumentProcessor {
       const embeddings = await getEmbeddings(chunks);
       await updateCollections(chunks, file, embeddings);
       const result = await DocumentService.updateDocument(file, {
-        content: document.length,
+        content: document.slice(0, 20) + (document.length - 20).toString(),
         is_embedded: true,
         file_url: file.webViewLink
       });
