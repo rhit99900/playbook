@@ -51,8 +51,8 @@ class Documents {
         }
       });
       return document;
-    } catch(e) {
-      console.error(`Failed to update document metadata for file ${file.id}`);
+    } catch(e: any) {
+      console.error(`Failed to update document metadata for file ${file.id}`, e?.message);
     }
   }
 
