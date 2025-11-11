@@ -3,7 +3,7 @@ import Builder from './builder';
 
 const main = async () => {
   const builder = new Builder();
-  await builder.process();
+  // await builder.process();
 }
 
 main();
