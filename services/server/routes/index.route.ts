@@ -42,6 +42,12 @@ class PlaybookRoutes {
       PlaybookController.deleteFiles
     )
 
+    this.router.get(
+      `${this.path}/files/lookup/:id`,
+      authenticateRequest,
+      PlaybookController.lookupDriveFile
+    )
+
     this.router.post(
       `${this.path}/files/index`,
       authenticateRequest,

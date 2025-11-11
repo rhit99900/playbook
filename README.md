@@ -115,6 +115,17 @@ Processes every file the service account can read.
 
 Processes only the listed files. The endpoint responds after all requested files have been processed (success or failure).
 
+### Embedding via the UI
+
+The `IndexedFilesList` page exposes the same functionality through a multi-file embed form:
+
+1. Paste a Google Drive share link or raw file ID into the “Add Files For Embedding” input.
+2. The UI extracts the file ID and calls `GET /files/lookup/:id` to verify access and fetch the Drive title.
+3. Queue as many files as you want, remove any mistakes, then click **Embed selected files** to POST the collected IDs to `/files/index`.
+4. On success the file table reloads so you can confirm the new entries.
+
+This flow is handy when you need to embed a few specific documents without reprocessing the entire Drive.
+
 ### Cleaning Chroma
 
 Use the script when you want to reset embeddings and rerun the builder:
@@ -131,6 +142,7 @@ Then trigger ingestion again.
 | ------ | ---- | ----------- |
 | `GET /files` | Paginated list of indexed files (`skip`, `limit` query params) |
 | `DELETE /files` | Removes Prisma file records (primarily for maintenance) |
+| `GET /files/lookup/:id` | Looks up a Google Drive file by ID to confirm existence + fetch its name |
 | `POST /files/index` | Triggers document ingestion (all files or provided `fileIds`) |
 | `POST /auth/register` | Creates a new user (requires `email`, `username`, `password`) |
 | `POST /auth/login` | Authenticates an existing user (`identifier` = email or username, plus `password`) |
@@ -151,7 +163,7 @@ The frontend `PromptInput` component listens to these events using `EventSource`
 ## Frontend Notes
 
 - `PromptInput` handles prompt submission, opens the SSE stream (`buildResponderStreamUrl`), and surfaces status/answer/context/source data with live UI updates.
-- `IndexedFilesList` shows a table of files returned from `GET /files`.
+- `IndexedFilesList` now shows the existing table of embedded files and an **“Add Files For Embedding”** panel. Paste any Drive share link or raw file ID, the UI validates it, calls `GET /files/lookup/:id` to resolve the title, and lets you queue multiple files before triggering `POST /files/index`.
 - Configure the frontend API base URL via `frontend/lib/config.ts` or `frontend/.env` (`API_BASE_URI`).
 
 ## Operational Tips

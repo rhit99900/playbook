@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URI } from './config';
-import { APIResponse, FileDetailsType, AuthApiResponse, AuthSession, LoginPayload, RegisterPayload, AuthUser } from './common.types';
+import { APIResponse, FileDetailsType, AuthApiResponse, AuthSession, LoginPayload, RegisterPayload, AuthUser, DriveFileMetadata } from './common.types';
 
 export const fetchFiles = async (skip: number, limit: number, token: string):Promise<APIResponse<FileDetailsType[]>> => {
   const url = new URL(`files?skip=${skip}&limit=${limit}`,API_BASE_URI).href;
@@ -84,4 +84,25 @@ export const deleteUser = async (id: number, token?: string): Promise<boolean> =
   } catch(e) {
     throw new Error('Failed to delete users');
   }
+}
+
+export const lookupDriveFile = async (fileId: string, token: string): Promise<DriveFileMetadata> => {
+  const encodedId = encodeURIComponent(fileId);
+  const url = new URL(`files/lookup/${encodedId}`, API_BASE_URI).href;
+  const { data } = await axios.get<APIResponse<DriveFileMetadata>>(url, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return data.data;
+}
+
+export const indexFilesForEmbedding = async (fileIds: string[], token: string): Promise<{ success: boolean; message?: string; fileIds?: string[] }> => {
+  const url = new URL('files/index', API_BASE_URI).href;
+  const { data } = await axios.post(url, { fileIds }, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return data;
 }

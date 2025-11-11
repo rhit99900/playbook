@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import DocumentService from "../../model/documents";
 import Responder from "../../model/responder";
 import Builder from "../../builder";
+import { authorise, getFilesByIds } from "../../utils/drive.utils";
 
 class Playbook {
 
@@ -51,6 +52,49 @@ class Playbook {
         fileIds
       });
     } catch(e) {
+      next(e);
+    }
+  }
+
+  public lookupDriveFile = async (req: Request, res: Response, next: NextFunction) => {
+    const rawFileId =
+      typeof req.params?.id === 'string' ? req.params.id :
+      typeof req.query?.fileId === 'string' ? req.query.fileId :
+      typeof req.body?.fileId === 'string' ? req.body.fileId : '';
+    const fileId = rawFileId.trim();
+
+    if (!fileId.length) {
+      return res.status(400).send({
+        success: false,
+        message: 'File ID is required'
+      });
+    }
+
+    try {
+      const auth = await authorise();
+      if(!auth) {
+        throw new Error('Failed to authenticate with Google Drive');
+      }
+
+      const files = await getFilesByIds(auth, [fileId]);
+      const file = files && files.length ? files[0] : undefined;
+
+      if(!file) {
+        return res.status(404).send({
+          success: false,
+          message: `File ${fileId} not found in Drive`
+        });
+      }
+
+      res.status(200).send({
+        success: true,
+        data: {
+          id: file.id,
+          name: file.name,
+          webViewLink: file.webViewLink
+        }
+      });
+    } catch (e) {
       next(e);
     }
   }

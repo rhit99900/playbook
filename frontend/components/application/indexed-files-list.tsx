@@ -13,6 +13,7 @@ import { readAuthSession } from "@/utils/auth-storage";
 import { setCredentials, setUserAuthState } from "@/utils/slices/auth";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
+import EmbedFilesForm from "./embed-files-form";
 
 const FilesList = () => {
 
@@ -66,6 +67,12 @@ const FilesList = () => {
     }
   }
 
+  const refreshFiles = () => {
+    if(!session?.token) return;
+    setSkip(0);
+    fetchFileList(0, limit, session.token);
+  }
+
   const nextPage = () => {
     const _skip = skip + limit;    
     setSkip(_skip);
@@ -73,44 +80,47 @@ const FilesList = () => {
   }
 
   return (
-    <div className="overflow-hidden rounded-md container mx-auto">
-      {files && files.length ? (
-        <div className="flex flex-col gap-1">
-        {files.map((file: FileDetailsType) => {
-          return (
-            <Item variant={'outline'} key={file.file_id} className="flex flex-row">
-              <ItemContent>
-                <Link href={file.file_url || '#'}>
-                  <p>{file.title}</p>
-                  <p className="text-xs italic">{file.file_id}</p>
-                </Link>
-              </ItemContent>
-              <ItemContent>{file.is_embedded === true ? 'Yes' : 'No'}</ItemContent>
-              <ItemContent>{formatDate(file.created_at.toString())}</ItemContent>
-            </Item>
-          )
-        })}
-          <div>
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious href="#"/>
-                </PaginationItem>
-                <PaginationItem>
-                  <p className="text-xs">
-                    {skip + limit} of {pageCount}
-                  </p>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext href="#" onClick={() => nextPage()}/>
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-        </div>
-        </div>        
-      ): (
-        <EmptyResults title="No Embdedded Files" />
-      )}      
+    <div className="container mx-auto flex flex-col gap-6">
+      <EmbedFilesForm token={session?.token} onSuccess={refreshFiles} />
+      <div className="overflow-hidden rounded-md">
+        {files && files.length ? (
+          <div className="flex flex-col gap-1">
+          {files.map((file: FileDetailsType) => {
+            return (
+              <Item variant={'outline'} key={file.file_id} className="flex flex-row">
+                <ItemContent>
+                  <Link href={file.file_url || '#'}>
+                    <p>{file.title}</p>
+                    <p className="text-xs italic">{file.file_id}</p>
+                  </Link>
+                </ItemContent>
+                <ItemContent>{file.is_embedded === true ? 'Yes' : 'No'}</ItemContent>
+                <ItemContent>{formatDate(file.created_at.toString())}</ItemContent>
+              </Item>
+            )
+          })}
+            <div>
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious href="#"/>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <p className="text-xs">
+                      {skip + limit} of {pageCount}
+                    </p>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext href="#" onClick={() => nextPage()}/>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+          </div>
+          </div>        
+        ): (
+          <EmptyResults title="No Embdedded Files" />
+        )}      
+      </div>
     </div>
   )
 }

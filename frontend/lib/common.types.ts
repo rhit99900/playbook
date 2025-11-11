@@ -47,6 +47,12 @@ export type AuthSession = {
   token: string;
 };
 
+export type DriveFileMetadata = {
+  id: string;
+  name?: string | null;
+  webViewLink?: string | null;
+};
+
 export type AuthApiResponse = {
   success: boolean;
   user: AuthUser;
