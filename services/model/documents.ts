@@ -65,7 +65,11 @@ class Documents {
         skip: filter.skip || 0,
         take: filter.limit || 10                
       });
-      const count = await Prisma.files.count();
+      const count = await Prisma.files.count({
+        where: {
+          is_embedded: true
+        }
+      });
       return {
         files: files,
         count: count
