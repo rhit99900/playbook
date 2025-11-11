@@ -29,8 +29,18 @@ class Playbook {
       const fileIdFromQuery = typeof req.query?.fileId === 'string' ? req.query.fileId : '';
       const fileIdFromBody = typeof req.body?.fileId === 'string' ? req.body.fileId : '';
       const targetFileId = (fileIdFromParams || fileIdFromQuery || fileIdFromBody).trim();
+      const fileIdsFromBody = Array.isArray(req.body?.fileIds) ? req.body.fileIds : [];
+      const cleanedFileIds = fileIdsFromBody
+        .map((id: string) => typeof id === 'string' ? id.trim() : '')
+        .filter((id: string) => id.length > 0);
 
-      const result = await DocumentService.deleteFiles(targetFileId ? { file_id: targetFileId } : {})
+      const filters = cleanedFileIds.length
+        ? { file_ids: cleanedFileIds }
+        : targetFileId
+          ? { file_id: targetFileId }
+          : {};
+
+      const result = await DocumentService.deleteFiles(filters)
 
       if(result?.fileIds?.length) {
         await deleteEmbeddingsByFileIds(result.fileIds);
@@ -143,6 +153,7 @@ class Playbook {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
 
     const sendEvent = (event: string, payload: Record<string, any>) => {

@@ -85,7 +85,12 @@ class Documents {
       const filters: Record<string,any> = {};
       let fileIdsToDelete: string[] = [];
 
-      if(filter.file_id) {
+      if(filter.file_ids && filter.file_ids.length) {
+        filters['file_id'] = {
+          in: filter.file_ids
+        };
+        fileIdsToDelete = filter.file_ids;
+      } else if(filter.file_id) {
         filters['file_id'] = filter.file_id;
         fileIdsToDelete = [filter.file_id];
       } else if(filter.id) {

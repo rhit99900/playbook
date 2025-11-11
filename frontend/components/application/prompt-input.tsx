@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { buildResponderStreamUrl } from "@/lib/apis";
@@ -15,6 +15,67 @@ const parseEvent = <T,>(event: MessageEvent): T | null => {
   } catch {
     return null;
   }
+};
+
+const sanitizeHref = (href?: string): string | undefined => {
+  if (!href) return undefined;
+  const trimmed = href.trim();
+  if (!trimmed.length) return undefined;
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return undefined;
+};
+
+const CodeBlock: NonNullable<Components["code"]> = ({
+  // @ts-ignore
+  inline,
+  className,
+  children,
+  ...props
+}) => {
+  if (inline) {
+    return (
+      <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-primary" {...props}>
+        {children}
+      </code>
+    );
+  }
+  return (
+    <pre className="text-xs overflow-auto rounded-lg bg-black p-4 mt-1 mb-1 text-zinc-50">
+      <code className={`font-mono ${className || ""}`} {...props}>
+        {children}
+      </code>
+    </pre>
+  );
+};
+
+const markdownComponents: Components = {
+  a: ({ children, href, ...props }) => {
+    const safeHref = sanitizeHref(href);
+    return (
+      <a
+        {...props}
+        href={safeHref}
+        target="_blank"
+        rel="noreferrer"
+        className="text-sm font-medium text-primary underline decoration-dotted underline-offset-4 hover:text-primary/80"
+      >
+        {children}
+      </a>
+    );
+  },
+  code: CodeBlock,
+  p: ({ children }) => (
+    <p className="text-sm leading-relaxed text-zinc-900 dark:text-zinc-50">{children}</p>
+  ),
+  ul: ({ children }) => <ul className="text-sm list-disc space-y-1 pl-6">{children}</ul>,
+  ol: ({ children }) => <ol className="text-sm list-decimal space-y-1 pl-6">{children}</ol>,
+  blockquote: ({ children }) => (
+    <blockquote className="text-sm border-l-4 border-primary/40 pl-4 italic text-zinc-600 dark:text-zinc-300">
+      {children}
+    </blockquote>
+  ),
 };
 
 const PromptInput = () => {
@@ -153,8 +214,11 @@ const PromptInput = () => {
         )}
         {answer && (
           <div className="mt-4 space-y-2">
-            <p className="text-xs uppercase text-zinc-500 dark:text-zinc-400">Answer</p>
-            <ReactMarkdown className="markdown-body space-y-4 text-base leading-relaxed text-zinc-900 dark:text-zinc-50">
+            <p className="text-xs uppercase text-zinc-500 dark:text-zinc-00">Answer</p>
+            <ReactMarkdown
+              className="markdown-body space-y-4 text-base leading-relaxed text-zinc-900 dark:text-zinc-50"
+              components={markdownComponents}
+            >
               {answer}
             </ReactMarkdown>
           </div>

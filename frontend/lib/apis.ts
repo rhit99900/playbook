@@ -97,6 +97,20 @@ export const deleteFile = async (fileId: string, token: string): Promise<boolean
   return data.success;
 }
 
+export const deleteFiles = async (fileIds: string[], token: string): Promise<boolean> => {
+  if(!fileIds.length) return false;
+  const url = new URL('files', API_BASE_URI).href;
+  const { data } = await axios.delete<{ success: boolean }>(url, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    data: {
+      fileIds
+    }
+  });
+  return data.success;
+}
+
 export const lookupDriveFile = async (fileId: string, token: string): Promise<DriveFileMetadata> => {
   const encodedId = encodeURIComponent(fileId);
   const url = new URL(`files/lookup/${encodedId}`, API_BASE_URI).href;
