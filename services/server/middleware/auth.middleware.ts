@@ -21,7 +21,6 @@ const extractBearerToken = (req: Request): string | null => {
 export const authenticateRequest = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const token = extractBearerToken(req);
-    console.log(`Token:`, token);
     if (!token) {
       return res.status(401).send({
         success: false,
