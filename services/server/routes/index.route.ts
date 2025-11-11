@@ -30,6 +30,12 @@ class PlaybookRoutes {
       PlaybookController.getFiles,
     )
 
+    this.router.get(
+      `${this.path}/stats`,
+      authenticateRequest,
+      PlaybookController.getStats
+    )
+
     this.router.delete(
       `${this.path}/files`,
       authenticateRequest,

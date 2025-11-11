@@ -53,6 +53,17 @@ export type DriveFileMetadata = {
   webViewLink?: string | null;
 };
 
+export type ChromaStatus = {
+  connected: boolean;
+  collectionName?: string | null;
+  documentCount?: number | null;
+};
+
+export type SystemStats = {
+  embeddedFiles: number;
+  chroma: ChromaStatus;
+};
+
 export type AuthApiResponse = {
   success: boolean;
   user: AuthUser;

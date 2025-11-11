@@ -83,12 +83,36 @@ class Documents {
   public deleteFiles = async (filter: FileSearchFilters) => {
     try {
       const filters: Record<string,any> = {};
-      if(filter.file_id) filters['file_id'] = filter.file_id;
-      if(filter.id) filters['file_id'] = filter.id;      
+      let fileIdsToDelete: string[] = [];
+
+      if(filter.file_id) {
+        filters['file_id'] = filter.file_id;
+        fileIdsToDelete = [filter.file_id];
+      } else if(filter.id) {
+        filters['id'] = filter.id;
+        const fileRecord = await Prisma.files.findUnique({
+          where: { id: filter.id },
+          select: { file_id: true }
+        });
+        if(fileRecord?.file_id) {
+          fileIdsToDelete = [fileRecord.file_id];
+        }
+      } else {
+        const allFiles = await Prisma.files.findMany({
+          select: { file_id: true }
+        });
+        fileIdsToDelete = allFiles
+          .map((file) => file.file_id)
+          .filter((id): id is string => Boolean(id && id.length));
+      }
+
       const files = await Prisma.files.deleteMany({
         where: filters
       });
-      return files;
+      return {
+        ...files,
+        fileIds: fileIdsToDelete
+      };
     } catch(e) {
       console.error(`ERROR: Failed to delete files for filter ${JSON.stringify(filter)}`);
     }
@@ -109,6 +133,20 @@ class Documents {
     } catch(e) {
       console.error(`Failed to check embedding status for file ${fileId}`);
       return false;
+    }
+  }
+
+  public getEmbeddedDocumentsCount = async ():Promise<number> => {
+    try {
+      const count = await Prisma.files.count({
+        where: {
+          is_embedded: true
+        }
+      });
+      return count;
+    } catch(e) {
+      console.error('Failed to count embedded documents');
+      throw e;
     }
   }
 }

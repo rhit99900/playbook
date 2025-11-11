@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchFiles } from "@/lib/apis";
+import { deleteFile, fetchFiles } from "@/lib/apis";
 import { useEffect, useState } from "react";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "../ui/pagination";
 import { FileDetailsType } from "@/lib/common.types";
@@ -14,6 +14,8 @@ import { setCredentials, setUserAuthState } from "@/utils/slices/auth";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import EmbedFilesForm from "./embed-files-form";
+import { Button } from "../ui/button";
+import { Ellipsis, Trash2Icon } from "lucide-react";
 
 const FilesList = () => {
 
@@ -21,6 +23,8 @@ const FilesList = () => {
   const [ skip, setSkip ] = useState<number>(0);
   const [ limit, setLimit ] = useState<number>(10);
   const [ pageCount, setPageCount ] = useState<number>(0);
+  const [ deletingFileId, setDeletingFileId ] = useState<string | null>(null);
+  const [ deleteError, setDeleteError ] = useState<string | null>(null);
 
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -79,10 +83,28 @@ const FilesList = () => {
     fetchFileList(_skip, limit, session?.token!);
   }
 
+  const handleDelete = async (fileId: string, title: string) => {
+    if(!session?.token) return;
+    // Change this to a custom popup
+    const confirmed = window.confirm(`Delete \"${title}\" and remove its embeddings?`);
+    if(!confirmed) return;
+    setDeletingFileId(fileId);
+    setDeleteError(null);
+    try {
+      await deleteFile(fileId, session.token);
+      refreshFiles();
+    } catch(error) {
+      setDeleteError('Failed to delete the requested file.');
+    } finally {
+      setDeletingFileId(null);
+    }
+  }
+
   return (
     <div className="container mx-auto flex flex-col gap-6">
       <EmbedFilesForm token={session?.token} onSuccess={refreshFiles} />
       <div className="overflow-hidden rounded-md">
+        {deleteError && <p className="mb-3 text-sm text-destructive">{deleteError}</p>}
         {files && files.length ? (
           <div className="flex flex-col gap-1">
           {files.map((file: FileDetailsType) => {
@@ -96,6 +118,21 @@ const FilesList = () => {
                 </ItemContent>
                 <ItemContent>{file.is_embedded === true ? 'Yes' : 'No'}</ItemContent>
                 <ItemContent>{formatDate(file.created_at.toString())}</ItemContent>
+                <ItemContent className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive"
+                    disabled={deletingFileId === file.file_id}
+                    onClick={() => handleDelete(file.file_id, file.title)}
+                  >
+                    {deletingFileId === file.file_id ? (
+                      <Ellipsis />
+                    ) : (
+                      <Trash2Icon />
+                    )}
+                  </Button>
+                </ItemContent>
               </Item>
             )
           })}

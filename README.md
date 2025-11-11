@@ -126,6 +126,8 @@ The `IndexedFilesList` page exposes the same functionality through a multi-file 
 
 This flow is handy when you need to embed a few specific documents without reprocessing the entire Drive.
 
+If a file was embedded by mistake, use the **Delete** action next to it in the table. The UI calls `DELETE /files/:id`, which removes the Prisma record and purges every chunk tied to that Drive ID from Chroma, so the document will no longer appear in retrieval results.
+
 ### Cleaning Chroma
 
 Use the script when you want to reset embeddings and rerun the builder:
@@ -142,8 +144,10 @@ Then trigger ingestion again.
 | ------ | ---- | ----------- |
 | `GET /files` | Paginated list of indexed files (`skip`, `limit` query params) |
 | `DELETE /files` | Removes Prisma file records (primarily for maintenance) |
+| `DELETE /files/:id` | Deletes a specific file plus its stored embeddings |
 | `GET /files/lookup/:id` | Looks up a Google Drive file by ID to confirm existence + fetch its name |
 | `POST /files/index` | Triggers document ingestion (all files or provided `fileIds`) |
+| `GET /stats` | Returns ChromaDB connection status and the embedded file count |
 | `POST /auth/register` | Creates a new user (requires `email`, `username`, `password`) |
 | `POST /auth/login` | Authenticates an existing user (`identifier` = email or username, plus `password`) |
 | `GET /respond` | SSE endpoint: `?query=question` |
@@ -164,6 +168,7 @@ The frontend `PromptInput` component listens to these events using `EventSource`
 
 - `PromptInput` handles prompt submission, opens the SSE stream (`buildResponderStreamUrl`), and surfaces status/answer/context/source data with live UI updates.
 - `IndexedFilesList` now shows the existing table of embedded files and an **“Add Files For Embedding”** panel. Paste any Drive share link or raw file ID, the UI validates it, calls `GET /files/lookup/:id` to resolve the title, and lets you queue multiple files before triggering `POST /files/index`.
+- The home page includes a lightweight **System status** card that calls `GET /stats` to report the ChromaDB connection and the number of embedded files.
 - Configure the frontend API base URL via `frontend/lib/config.ts` or `frontend/.env` (`API_BASE_URI`).
 
 ## Operational Tips

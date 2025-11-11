@@ -3,6 +3,7 @@ import DocumentService from "../../model/documents";
 import Responder from "../../model/responder";
 import Builder from "../../builder";
 import { authorise, getFilesByIds } from "../../utils/drive.utils";
+import { deleteEmbeddingsByFileIds, getChromaStatus } from "../../utils/chroma.utils";
 
 class Playbook {
 
@@ -24,7 +25,16 @@ class Playbook {
 
   public deleteFiles = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await DocumentService.deleteFiles({})
+      const fileIdFromParams = typeof req.params?.id === 'string' ? req.params.id : '';
+      const fileIdFromQuery = typeof req.query?.fileId === 'string' ? req.query.fileId : '';
+      const fileIdFromBody = typeof req.body?.fileId === 'string' ? req.body.fileId : '';
+      const targetFileId = (fileIdFromParams || fileIdFromQuery || fileIdFromBody).trim();
+
+      const result = await DocumentService.deleteFiles(targetFileId ? { file_id: targetFileId } : {})
+
+      if(result?.fileIds?.length) {
+        await deleteEmbeddingsByFileIds(result.fileIds);
+      }
       res.status(200).send({
         success: true,
         data: result
@@ -52,6 +62,24 @@ class Playbook {
         fileIds
       });
     } catch(e) {
+      next(e);
+    }
+  }
+
+  public getStats = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const [ embeddedFiles, chroma ] = await Promise.all([
+        DocumentService.getEmbeddedDocumentsCount(),
+        getChromaStatus()
+      ]);
+      res.status(200).send({
+        success: true,
+        data: {
+          embeddedFiles,
+          chroma
+        }
+      })
+    } catch (e) {
       next(e);
     }
   }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URI } from './config';
-import { APIResponse, FileDetailsType, AuthApiResponse, AuthSession, LoginPayload, RegisterPayload, AuthUser, DriveFileMetadata } from './common.types';
+import { APIResponse, FileDetailsType, AuthApiResponse, AuthSession, LoginPayload, RegisterPayload, AuthUser, DriveFileMetadata, SystemStats } from './common.types';
 
 export const fetchFiles = async (skip: number, limit: number, token: string):Promise<APIResponse<FileDetailsType[]>> => {
   const url = new URL(`files?skip=${skip}&limit=${limit}`,API_BASE_URI).href;
@@ -86,6 +86,17 @@ export const deleteUser = async (id: number, token?: string): Promise<boolean> =
   }
 }
 
+export const deleteFile = async (fileId: string, token: string): Promise<boolean> => {
+  const encodedId = encodeURIComponent(fileId);
+  const url = new URL(`files/${encodedId}`, API_BASE_URI).href;
+  const { data } = await axios.delete<{ success: boolean }>(url, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return data.success;
+}
+
 export const lookupDriveFile = async (fileId: string, token: string): Promise<DriveFileMetadata> => {
   const encodedId = encodeURIComponent(fileId);
   const url = new URL(`files/lookup/${encodedId}`, API_BASE_URI).href;
@@ -105,4 +116,14 @@ export const indexFilesForEmbedding = async (fileIds: string[], token: string): 
     }
   });
   return data;
+}
+
+export const fetchSystemStats = async (token: string): Promise<SystemStats> => {
+  const url = new URL('stats', API_BASE_URI).href;
+  const { data } = await axios.get<APIResponse<SystemStats>>(url, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return data.data;
 }

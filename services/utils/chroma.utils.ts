@@ -9,6 +9,13 @@ const Chroma = new ChromaClient({
 
 let DocumentCollection: any;
 
+const ensureDocumentCollection = async () => {
+  if(!DocumentCollection) {
+    await initialiseChromaDB();
+  }
+  return DocumentCollection;
+}
+
 export type MetaData = {
   id: string | null | undefined;
   chunkIndex: number;
@@ -29,6 +36,7 @@ const initialiseChromaDB = async () => {
 
 const updateCollections = async (chunks: string[], file: FileDetails, embeddings: any) => {
   try {
+    await ensureDocumentCollection();
     const ids = chunks.map((_,i) => `${file.id}-chunk-${i}`);
     const metadata: MetaData[] = chunks.map((_,i) => ({
       id: file.id,
@@ -46,8 +54,51 @@ const updateCollections = async (chunks: string[], file: FileDetails, embeddings
   }
 }
 
+const deleteEmbeddingsByFileIds = async (fileIds: string[]) => {
+  if(!fileIds || !fileIds.length) return;
+  try {
+    const collection = await ensureDocumentCollection();
+    if(!collection) return;
+    for (const fileId of fileIds) {
+      if(!fileId) continue;
+      await collection.delete({
+        where: { id: fileId }
+      });
+    }
+  } catch(e) {
+    console.error('Failed to delete embeddings for files', e);
+  }
+}
+
+const getChromaStatus = async () => {
+  try {
+    const collection = await ensureDocumentCollection();
+    if(!collection) {
+      throw new Error('Collection unavailable');
+    }
+    let documentCount: number | null = null;
+    if (typeof collection.count === 'function') {
+      documentCount = await collection.count();
+    }
+    return {
+      connected: true,
+      collectionName: CHROMA_COLLECTION_NAME,
+      documentCount
+    }
+  } catch(e) {
+    console.error('Failed to fetch Chroma status', e);
+    return {
+      connected: false,
+      collectionName: CHROMA_COLLECTION_NAME,
+      documentCount: null
+    }
+  }
+}
+
 export {
   initialiseChromaDB,
   updateCollections,
-  DocumentCollection
+  DocumentCollection,
+  deleteEmbeddingsByFileIds,
+  getChromaStatus
 }

@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import FilesList from "@/components/application/indexed-files-list";
 import PromptInput from "@/components/application/prompt-input";
 import { useAppDispatch, useAppSelector } from "@/utils/state/hooks";
 import { RootState } from "@/utils/state/store";
 import { readAuthSession } from "@/utils/auth-storage";
 import { setCredentials, setUserAuthState } from "@/utils/slices/auth";
 import Authorising from "@/components/application/authorising";
+import SystemStatsPanel from "@/components/application/system-stats";
 
 type AuthState = "checking" | "authorized" | "unauthorized";
 
@@ -44,7 +44,10 @@ export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">      
       <main className="container flex min-h-screen w-full flex-col items-center justify-between bg-white px-6 md:px-16 py-32 dark:bg-black sm:items-start">
-        <PromptInput />
+        <div className="flex w-full flex-col gap-8">
+          <PromptInput />
+          <SystemStatsPanel token={session?.token} />
+        </div>
       </main>
     </div>
   );

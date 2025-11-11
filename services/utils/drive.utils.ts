@@ -104,13 +104,11 @@ export const getDocumentContent = async (auth: any, id: string) => {
       case 'application/vnd.google-apps.document':
         return await getGoogleDocContent(auth, id);
       case 'application/vnd.google-apps.spreadsheet':
-        // return await getGoogleSheetContent(auth, id);
-        return false;
+        return await getGoogleSheetContent(auth, id);        
       case 'application/vnd.google-apps.presentation':
         return await getGoogleSlideContent(auth, id);
       case 'application/pdf':
-        // return await getPdfContent(auth, id);
-        return false;
+        return await getPdfContent(auth, id);        
       default:
         return false;
         // return await exportPlainText(drive, id);
