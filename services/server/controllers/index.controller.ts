@@ -9,9 +9,11 @@ class Playbook {
 
   public getFiles = async (req: Request, res: Response, next: NextFunction) => {
     try {      
+      const search = typeof req.query?.search === 'string' ? req.query.search.trim() : '';
       const files = await DocumentService.getFiles({
         skip: req.query.skip ? Number(req.query.skip) : 0,
-        limit: req.query.limit ? Number(req.query.limit): 10
+        limit: req.query.limit ? Number(req.query.limit): 10,
+        search: search.length ? search : undefined
       });
       res.status(200).send({
         success: true,

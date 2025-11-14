@@ -58,24 +58,31 @@ class Documents {
 
   public getFiles = async (filter: FileSearchFilters):Promise<FileListingResponse> => {
     try {
+      const where: Record<string, any> = {
+        is_embedded: true
+      };
+
+      if(filter.search && filter.search.trim().length) {
+        where['title'] = {
+          contains: filter.search.trim(),
+        };
+      }
+
       const files = await Prisma.files.findMany({
-        where: {
-          is_embedded: true
-        },
+        where,
         skip: filter.skip || 0,
-        take: filter.limit || 10                
+        take: filter.limit || 10
       });
+
       const count = await Prisma.files.count({
-        where: {
-          is_embedded: true
-        }
+        where
       });
       return {
         files: files,
         count: count
       };
     } catch(e) {
-      console.log('Failed to fetch files');
+      console.log('Failed to fetch files', e);
       throw new Error('Failed to fetch files');
     }
   }

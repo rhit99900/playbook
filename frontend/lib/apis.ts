@@ -2,11 +2,19 @@ import axios from 'axios';
 import { API_BASE_URI } from './config';
 import { APIResponse, FileDetailsType, AuthApiResponse, AuthSession, LoginPayload, RegisterPayload, AuthUser, DriveFileMetadata, SystemStats } from './common.types';
 
-export const fetchFiles = async (skip: number, limit: number, token: string):Promise<APIResponse<FileDetailsType[]>> => {
-  const url = new URL(`files?skip=${skip}&limit=${limit}`,API_BASE_URI).href;
+export const fetchFiles = async (skip: number, limit: number, token: string, search?: string):Promise<APIResponse<FileDetailsType[]>> => {
+  const url = new URL('files', API_BASE_URI);
+  
+  url.searchParams.set('skip', skip.toString());
+  url.searchParams.set('limit', limit.toString());  
+  
+  if(search && search.trim().length) {
+    url.searchParams.set('search', search.trim());
+  }
+  
   const data = await axios({
     method: 'get',
-    url: url,
+    url: url.href,
     headers: {
       Authorization: `Bearer ${token}`
     }

@@ -3,7 +3,8 @@ export type FileSearchFilters = {
   limit?: number,
   id?: number,
   file_id?: string,
-  file_ids?: string[]
+  file_ids?: string[],
+  search?: string
 }
 
 export type FilesParams = {

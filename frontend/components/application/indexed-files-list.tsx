@@ -1,7 +1,7 @@
 "use client";
 
 import { deleteFile, deleteFiles, fetchFiles } from "@/lib/apis";
-import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "../ui/pagination";
 import { FileDetailsType } from "@/lib/common.types";
 import Link from "next/link";
@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import EmbedFilesForm from "./embed-files-form";
 import { Button } from "../ui/button";
-import { Ellipsis, Trash2Icon } from "lucide-react";
+import { Ellipsis, EraserIcon, SearchIcon, Trash2Icon } from "lucide-react";
 
 const FilesList = () => {
 
@@ -27,6 +27,8 @@ const FilesList = () => {
   const [ deleteError, setDeleteError ] = useState<string | null>(null);
   const [ selectedFiles, setSelectedFiles ] = useState<Set<string>>(new Set());
   const [ bulkDeleting, setBulkDeleting ] = useState<boolean>(false);
+  const [ searchValue, setSearchValue ] = useState<string>('');
+  const [ appliedSearch, setAppliedSearch ] = useState<string>('');
   const selectAllRef = useRef<HTMLInputElement | null>(null);
 
   const dispatch = useAppDispatch();
@@ -66,12 +68,11 @@ const FilesList = () => {
     }
   }, [authState, session])
 
-  const fetchFileList = async (skip: number, limit: number, token: string) => {
-    const files = await fetchFiles(skip, limit, token);
+  const fetchFileList = async (skip: number, limit: number, token: string, searchTerm?: string) => {
+    const query = typeof searchTerm === 'string' ? searchTerm : appliedSearch;
+    const files = await fetchFiles(skip, limit, token, query);
     setFiles(files.data);
-    if(files.count) {
-      setPageCount(files.count);
-    }
+    setPageCount(typeof files.count === 'number' ? files.count : 0);
   }
 
   const refreshFiles = () => {
@@ -84,13 +85,17 @@ const FilesList = () => {
   const nextPage = () => {
     const _skip = skip + limit;    
     setSkip(_skip);
-    fetchFileList(_skip, limit, session?.token!);
+    if(_skip <= pageCount) {
+      fetchFileList(_skip, limit, session?.token!, appliedSearch);
+    }
   }
 
   const prevPage = () => {
     const _skip = Math.max(skip - limit,0);
     setSkip(_skip);
-    fetchFileList(_skip, limit, session?.token!);
+    if(skip !== 0) {
+      fetchFileList(_skip, limit, session?.token!, appliedSearch);
+    }
   }
 
   const handlePrevClick = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -169,6 +174,24 @@ const FilesList = () => {
     }
   }
 
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if(!session?.token) return;
+    const query = searchValue.trim();
+    setAppliedSearch(query);
+    setSkip(0);
+    fetchFileList(0, limit, session.token, query);
+  }
+
+  const handleClearSearch = () => {
+    if(!session?.token) return;
+    setSearchValue('');
+    if(appliedSearch.length === 0) return;
+    setAppliedSearch('');
+    setSkip(0);
+    fetchFileList(0, limit, session.token, '');
+  }
+
   useEffect(() => {
     setSelectedFiles((prev) => {
       const next = new Set<string>();
@@ -192,6 +215,36 @@ const FilesList = () => {
       <EmbedFilesForm token={session?.token} onSuccess={refreshFiles} />
       <div className="overflow-hidden rounded-md">
         {deleteError && <p className="mb-3 text-sm text-destructive">{deleteError}</p>}
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <form onSubmit={handleSearchSubmit} className="flex w-full flex-1 flex-col gap-2 sm:flex-row">
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
+              placeholder="Search embedded files by name"
+              className="w-full flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none h-10"
+            />
+            <div className="flex gap-2">
+              <Button type="submit" variant="default" className="h-10 w-10"><SearchIcon /></Button>
+              <Button
+                type="button"
+                variant="outline"                
+                className="h-10 w-10"
+                onClick={handleClearSearch}
+                disabled={!searchValue.length && !appliedSearch.length}
+              >
+                <EraserIcon />
+              </Button>
+            </div>
+          </form>                    
+        </div>
+        <div className="w-full mb-4">
+          {appliedSearch.length > 0 && (
+            <p className="text-xs text-muted-foreground sm:w-auto text-center w-full">
+              Showing results for "{appliedSearch}"
+            </p>
+          )}
+        </div>
         {files && files.length ? (
           <div className="flex flex-col gap-1">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-background/60 px-3 py-2">
@@ -261,15 +314,15 @@ const FilesList = () => {
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious href="#" onClick={handlePrevClick}/>
+                    <PaginationPrevious href="#" onClick={handlePrevClick} className={skip === 0 ? 'opacity-40': ''}/>
                   </PaginationItem>
                   <PaginationItem>
                     <p className="text-xs">
-                      {skip + limit} of {pageCount}
+                      {Math.min(skip + limit, pageCount)} of {pageCount}
                     </p>
                   </PaginationItem>
                   <PaginationItem>
-                    <PaginationNext href="#" onClick={handleNextClick}/>
+                    <PaginationNext href="#" onClick={handleNextClick} className={(skip + limit) > pageCount ? 'opacity-40': ''}/>
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
