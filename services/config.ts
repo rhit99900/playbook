@@ -12,8 +12,8 @@ export const TOKEN_PATH = path.join(__dirname, '..', 'token.json');
 export const GOOGLE_DRIVE_CREDENTIALS = require(CREDENTIALS_PATH);
 
 
-export const CHUNK_SIZE = 500;
-export const CHUNK_OVERLAP = 100;
+export const CHUNK_SIZE = 1500;
+export const CHUNK_OVERLAP = 200;
 
 export const CHROMA_COLLECTION_NAME = 'google_drive_playbook';
 

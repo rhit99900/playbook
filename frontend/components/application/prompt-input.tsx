@@ -5,9 +5,10 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { buildResponderStreamUrl } from "@/lib/apis";
-import { ResponderAnswerEvent, ResponderContextEvent, ResponderStatusEvent, SourceAttribution } from "@/lib/common.types";
+import { MermaidDiagram, ResponderAnswerEvent, ResponderContextEvent, ResponderStatusEvent, SourceAttribution } from "@/lib/common.types";
 import { useAppSelector } from "@/utils/state/hooks";
 import { RootState } from "@/utils/state/store";
+import MermaidDiagramCard from "./mermaid-diagram";
 
 const parseEvent = <T,>(event: MessageEvent): T | null => {
   try {
@@ -84,6 +85,7 @@ const PromptInput = () => {
   const [ answer, setAnswer ] = useState<string>('');
   const [ context, setContext ] = useState<string>('');
   const [ sources, setSources ] = useState<SourceAttribution[]>([]);
+  const [ diagrams, setDiagrams ] = useState<MermaidDiagram[]>([]);
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null);
   const [ isStreaming, setIsStreaming ] = useState<boolean>(false);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -102,6 +104,7 @@ const PromptInput = () => {
     setAnswer('');
     setContext('');
     setSources([]);
+    setDiagrams([]);
     setErrorMessage(null);
   }, []);
 
@@ -132,6 +135,7 @@ const PromptInput = () => {
       if (payload) {
         setContext(payload.context);
         setSources(payload.sources || []);
+        setDiagrams(payload.diagrams || []);
       }
     });
 
@@ -221,6 +225,16 @@ const PromptInput = () => {
             >
               {answer}
             </ReactMarkdown>
+          </div>
+        )}
+        {diagrams.length > 0 && (
+          <div className="mt-4 space-y-3">
+            <p className="text-xs uppercase text-zinc-500 dark:text-zinc-400">Diagrams</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              {diagrams.map((diagram, index) => (
+                <MermaidDiagramCard key={diagram.id} diagram={diagram} index={index} />
+              ))}
+            </div>
           </div>
         )}
         {context && (

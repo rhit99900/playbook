@@ -14,16 +14,26 @@ export type APIResponse<T> = {
   count?: number;
 }
 
+export type MermaidDiagram = {
+  id: string;
+  definition: string;
+  sourceDocumentId?: string | null;
+  chunkIndex?: number;
+};
+
 export type SourceAttribution = {
   documentId?: string | null;
   chunkIndex: number;
   chunk: string;
   distance?: number | null;
+  fileUrl?: string | null;
+  mermaidDiagrams?: string[];
 };
 
 export type ResponderContextEvent = {
   context: string;
   sources: SourceAttribution[];
+  diagrams?: MermaidDiagram[];
 };
 
 export type ResponderStatusEvent = {

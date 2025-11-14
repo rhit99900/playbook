@@ -285,10 +285,7 @@ const FilesList = () => {
                     <p>{file.title}</p>
                     <p className="text-xs italic">{file.file_id}</p>
                   </Link>
-                </ItemContent>
-                <ItemContent className="w-20 text-sm">
-                  {file.is_embedded === true ? 'Yes' : 'No'}
-                </ItemContent>
+                </ItemContent>                
                 <ItemContent className="w-36 text-sm">
                   {formatDate(file.created_at.toString())}
                 </ItemContent>

@@ -181,7 +181,8 @@ class Playbook {
       const retrieval = await responder.retrieveDocuments();
       sendEvent('context', {
         context: retrieval.context,
-        sources: retrieval.sources
+        sources: retrieval.sources,
+        diagrams: retrieval.diagrams
       });
 
       sendEvent('status', { message: 'Generating answer with OpenAI' });

@@ -2,18 +2,87 @@ import { DocumentCollection, MetaData } from "../utils/chroma.utils";
 import { getEmbeddings } from "./embeddings.model";
 import openai from "./openai";
 
+const extractMermaidDefinitions = (text: string): string[] => {
+  if (!text) {
+    return [];
+  }
+
+  const definitions: string[] = [];
+
+  const fencedRegex = /```mermaid([\s\S]*?)```/gi;
+  let match: RegExpExecArray | null;
+  while ((match = fencedRegex.exec(text)) !== null) {
+    const definition = cleanMermaidDefinition(match[1]);
+    if (definition) {
+      definitions.push(definition);
+    }
+  }
+
+  if (!definitions.length) {
+    const heuristicDefinition = detectHeuristicDiagram(text);
+    if (heuristicDefinition) {
+      definitions.push(heuristicDefinition);
+    }
+  }
+
+  return definitions;
+};
+
+const cleanMermaidDefinition = (raw: string | undefined | null): string | null => {
+  if (!raw) return null;
+  let definition = raw.trim();
+  if (definition.startsWith('```')) {
+    definition = definition.replace(/^```/, '').trim();
+  }
+  if (definition.startsWith('mermaid')) {
+    definition = definition.replace(/^mermaid/, '').trim();
+  }
+  return definition.length ? definition : null;
+};
+
+const detectHeuristicDiagram = (text: string): string | null => {
+  const trimmed = text.trim();
+  if (!trimmed.length) {
+    return null;
+  }
+
+  const hasDiagramKeywords =
+    /\b(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|pie|gantt|erDiagram)\b/i.test(trimmed);
+  const hasArrowSymbols = /-->|==>|-.->|==.*==/.test(trimmed);
+
+  if (!hasDiagramKeywords && !hasArrowSymbols) {
+    return null;
+  }
+
+  const maybeDefinition = cleanMermaidDefinition(trimmed);
+  if (maybeDefinition) {
+    return maybeDefinition;
+  }
+
+  return trimmed.length ? trimmed : null;
+};
+
+export type MermaidDiagram = {
+  id: string;
+  definition: string;
+  sourceDocumentId?: string | null;
+  chunkIndex?: number;
+};
+
 export type SourceAttribution = {
   documentId: string | null | undefined;
   chunkIndex: number;
   chunk: string;
   distance: number | null;
   fileUrl?: string | null;
+  mermaidDiagrams?: string[];
 };
 
 export type RetrievalResult = {
   context: string;
   chunks: string[];
   sources: SourceAttribution[];
+  diagrams: MermaidDiagram[];
 };
 
 export type ResponderResult = RetrievalResult & {
@@ -62,13 +131,30 @@ class Responder {
     const sources: SourceAttribution[] = documents.map((chunk: string, index: number) => {
       const metadata = metadatas[index] as MetaData | null | undefined;
       const distance = typeof distances[index] === 'number' ? distances[index] : null;
+      const mermaidDiagrams = extractMermaidDefinitions(chunk);
       return {
         documentId: metadata?.id,
         chunkIndex: metadata?.chunkIndex ?? index,
         chunk,
         distance,
-        fileUrl: metadata?.fileUrl
+        fileUrl: metadata?.fileUrl,
+        mermaidDiagrams: mermaidDiagrams.length ? mermaidDiagrams : undefined
       };
+    });
+
+    const diagrams: MermaidDiagram[] = [];
+    sources.forEach((source) => {
+      if (!source.mermaidDiagrams || !source.mermaidDiagrams.length) {
+        return;
+      }
+      source.mermaidDiagrams.forEach((definition, index) => {
+        diagrams.push({
+          id: `${source.documentId ?? 'unknown'}-${source.chunkIndex}-${index}`,
+          definition,
+          sourceDocumentId: source.documentId,
+          chunkIndex: source.chunkIndex
+        });
+      });
     });
 
     const contextualisedChunks = sources.map((source, index) => {
@@ -83,7 +169,8 @@ class Responder {
     return {
       context: contextualisedChunks.join('\n--\n'),
       chunks: documents,
-      sources
+      sources,
+      diagrams
     };
   }
 
