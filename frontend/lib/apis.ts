@@ -22,9 +22,10 @@ export const fetchFiles = async (skip: number, limit: number, token: string, sea
   return data.data;
 }
 
-export const buildResponderStreamUrl = (query: string) => {
+export const buildResponderStreamUrl = (query: string, source: 'docs' | 'code' = 'docs') => {
   const url = new URL('respond', API_BASE_URI);
   url.searchParams.set('query', query);
+  url.searchParams.set('source', source);
   return url.toString();
 }
 

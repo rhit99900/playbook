@@ -2,6 +2,8 @@
 
 Knowledge-transfer chatbot that ingests Google Drive documents, stores semantic embeddings in ChromaDB, and serves streaming answers through an Express + Next.js stack.
 
+<img src="docs/playbook-demo.png" />
+
 ## Stack
 
 - **Backend:** Node.js (TypeScript), Express, Prisma (SQLite)
@@ -116,6 +118,8 @@ Processes every file the service account can read.
 Processes only the listed files. The endpoint responds after all requested files have been processed (success or failure).
 
 ### Embedding via the UI
+
+<img src="docs/playbook-files.png" />
 
 The `IndexedFilesList` page exposes the same functionality through a multi-file embed form:
 

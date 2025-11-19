@@ -88,6 +88,7 @@ const PromptInput = () => {
   const [ diagrams, setDiagrams ] = useState<MermaidDiagram[]>([]);
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null);
   const [ isStreaming, setIsStreaming ] = useState<boolean>(false);
+  const [ sourceTarget, setSourceTarget ] = useState<'docs' | 'code'>('docs');
   const eventSourceRef = useRef<EventSource | null>(null);
   const session = useAppSelector((state: RootState) => state.auth.session);
 
@@ -121,7 +122,7 @@ const PromptInput = () => {
     resetResponse();
     setIsStreaming(true);
 
-    const streamUrl = buildResponderStreamUrl(trimmedQuery);
+    const streamUrl = buildResponderStreamUrl(trimmedQuery, sourceTarget);
     const eventSource = new EventSource(streamUrl);
     eventSourceRef.current = eventSource;
 
@@ -155,7 +156,7 @@ const PromptInput = () => {
     eventSource.addEventListener('done', () => {
       closeStream();
     });
-  }, [prompt, closeStream, resetResponse]);
+  }, [prompt, closeStream, resetResponse, sourceTarget]);
 
   const stopManually = useCallback(() => {
     setStatusMessage((prev) => prev || 'Response stream stopped.');
@@ -190,22 +191,47 @@ const PromptInput = () => {
           />
           <p className="mt-1 text-xs text-muted-foreground">Press ⌘/Ctrl + Enter to send</p>
         </div>
-        <div className="flex gap-2 flex-row">
-          <Button
-            onClick={startStream}
-            disabled={!prompt.trim().length || isStreaming}
-            className="md:w-24"
-          >
-            {isStreaming ? 'Streaming...' : 'Ask'}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={stopManually}
-            disabled={!isStreaming}
-            className="md:w-24"
-          >
-            Stop
-          </Button>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="font-medium text-zinc-700 dark:text-zinc-200">Search in:</span>
+            <div className="flex gap-1">
+              <Button
+                type="button"
+                variant={sourceTarget === 'docs' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSourceTarget('docs')}
+                disabled={isStreaming}
+              >
+                Drive docs
+              </Button>
+              <Button
+                type="button"
+                variant={sourceTarget === 'code' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSourceTarget('code')}
+                disabled={isStreaming}
+              >
+                GitLab code
+              </Button>
+            </div>
+          </div>
+          <div className="flex gap-2 flex-row">
+            <Button
+              onClick={startStream}
+              disabled={!prompt.trim().length || isStreaming}
+              className="md:w-24"
+            >
+              {isStreaming ? 'Streaming...' : 'Ask'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={stopManually}
+              disabled={!isStreaming}
+              className="md:w-24"
+            >
+              Stop
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -251,8 +277,33 @@ const PromptInput = () => {
             <ul className="mt-2 space-y-1 text-sm text-zinc-700 dark:text-zinc-200">
               {sources.map((source, index) => (
                 <li key={`${source.documentId ?? 'unknown'}-${source.chunkIndex}-${index}`}>
-                  <span className="font-medium text-xs">{source.documentId ?? 'Unknown document'}</span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400"> · chunk {source.chunkIndex}</span>
+                  <span className="font-medium text-xs">
+                    {sanitizeHref(source.fileUrl ?? undefined) ? (
+                      <a
+                        href={sanitizeHref(source.fileUrl ?? undefined)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary underline-offset-4 hover:underline"
+                      >
+                        {source.path || source.documentId || 'Unknown document'}
+                      </a>
+                    ) : (
+                      source.path || source.documentId || 'Unknown document'
+                    )}
+                  </span>
+                  {source.branch && (
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400"> · {source.branch}</span>
+                  )}
+                  {source.chunkIndex !== undefined && (
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400"> · chunk {source.chunkIndex}</span>
+                  )}
+                  {typeof source.startLine === 'number' && (
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {' '}
+                      · lines {source.startLine}
+                      {source.endLine ? `-${source.endLine}` : ''}
+                    </span>
+                  )}
                   {typeof source.distance === 'number' && (
                     <span className="text-xs text-zinc-500 dark:text-zinc-400"> (distance {source.distance.toFixed(3)})</span>
                   )}
