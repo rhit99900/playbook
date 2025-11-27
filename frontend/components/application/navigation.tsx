@@ -37,7 +37,7 @@ const Navigation = () => {
   };
 
   return (
-    <div className="w-full fixed py-2.5 bg-zinc-50 dark:bg-black">
+    <div className="w-full fixed py-2.5 bg-white dark:bg-black">
       <div className="container m-auto flex justify-center">
         <Menubar className="">
           <MenubarMenu>

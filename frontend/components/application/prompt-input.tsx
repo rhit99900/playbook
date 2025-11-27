@@ -9,7 +9,7 @@ import { MermaidDiagram, ResponderAnswerEvent, ResponderContextEvent, ResponderS
 import { useAppSelector } from "@/utils/state/hooks";
 import { RootState } from "@/utils/state/store";
 import MermaidDiagramCard from "./mermaid-diagram";
-import { BookTextIcon, FileCodeCornerIcon } from "lucide-react";
+import { BookTextIcon, BotIcon, FileCodeCornerIcon } from "lucide-react";
 
 const parseEvent = <T,>(event: MessageEvent): T | null => {
   try {
@@ -35,8 +35,8 @@ const CodeBlock: NonNullable<Components["code"]> = ({
   className,
   children,
   ...props
-}) => {
-  if (inline) {
+}) => {  
+  if (className === undefined) {
     return (
       <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-primary" {...props}>
         {children}
@@ -44,7 +44,7 @@ const CodeBlock: NonNullable<Components["code"]> = ({
     );
   }
   return (
-    <pre className="text-xs overflow-auto rounded-lg bg-black p-4 mt-1 mb-1 text-zinc-50">
+    <pre className="text-xs overflow-auto rounded-lg dark:bg-black p-4 mt-1 mb-1 dark:text-zinc-50 bg-zinc-200 text-primary">
       <code className={`font-mono ${className || ""}`} {...props}>
         {children}
       </code>
@@ -157,7 +157,7 @@ const PromptInput = () => {
     eventSource.addEventListener('done', () => {
       closeStream();
     });
-  }, [prompt, closeStream, resetResponse, sourceTarget]);
+  }, [prompt, closeStream, resetResponse, sourceTarget]);  
 
   const stopManually = useCallback(() => {
     setStatusMessage((prev) => prev || 'Response stream stopped.');
@@ -316,9 +316,14 @@ const PromptInput = () => {
           </div>
         )}
         {!statusMessage && !answer && !errorMessage && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Responses will appear here once you ask a question.
-          </p>
+          <div>
+            <div className="flex justify-center w-full mb-1.5">
+              <BotIcon className="text-zinc-500 dark:text-zinc-400"/> 
+            </div>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 justify-center text-center">
+              Responses will appear here once you ask a question.
+            </p>
+          </div>
         )}
       </div>
     </div>

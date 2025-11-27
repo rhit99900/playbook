@@ -44,7 +44,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">      
+    <div className="flex min-h-screen items-center justify-center bg-white font-sans dark:bg-black">      
       <main className="container flex min-h-screen w-full flex-col items-center justify-between bg-white px-6 md:px-16 py-32 dark:bg-black sm:items-start">
         <div className="flex w-full flex-col gap-8">
           <PromptInput />
@@ -61,7 +61,7 @@ export default function Home() {
               >
                 Playbook GitHub repository
               </Link>
-              , which contains the full Express + Next.js codebase, Database schema, and builder scripts used to ingest Google Drive documents. Explore the code, file issues, or open a pull request to contribute improvements.
+              , which contains the full Express + Next.js codebase, Database schema, and builder scripts used to ingest Google Drive documents and Gitlab Code for Projects. Explore the code, file issues, or open a pull request to contribute improvements.
             </p>
           </section>
         </div>
