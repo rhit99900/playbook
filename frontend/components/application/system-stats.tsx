@@ -73,16 +73,32 @@ const SystemStatsPanel = ({ token }: SystemStatsProps) => {
           <div className="rounded-lg border border-border/60 bg-background p-4">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">ChromaDB</p>
             <p className={`mt-2 text-lg font-semibold ${chromaStatusClass}`}>{chromaStatusText}</p>
+            <div className="flex flex-row gap-[2%] mt-1.5">
             {typeof stats?.chroma.documentCount === "number" && (
-              <p className="text-sm text-muted-foreground">
-                {stats.chroma.documentCount} chunks stored
-              </p>
-            )}
-            {stats?.chroma.collectionName && (
-              <p className="text-xs text-muted-foreground">
-                Collection: {stats.chroma.collectionName}
-              </p>
-            )}
+              <div className="w-[49%] rounded-lg border border-border/60 bg-background p-4">
+                <p className="text-sm text-muted-foreground">
+                  {stats.chroma.documentCount} chunks stored
+                </p>
+                {stats?.chroma.collectionName && (
+                  <p className="text-xs text-muted-foreground">
+                    Collection: {stats.chroma.collectionName}
+                  </p>
+                )}
+              </div>
+            )}            
+            {typeof stats?.chroma_code.documentCount === "number" && (              
+              <div className="w-[49%] rounded-lg border border-border/60 bg-background p-4">
+                <p className="text-sm text-muted-foreground">
+                  {stats.chroma_code.documentCount} code chunks stored
+                </p>
+                {stats?.chroma_code.collectionName && (
+                  <p className="text-xs text-muted-foreground">
+                    Collection: {stats.chroma_code.collectionName}
+                  </p>
+                )}  
+              </div>
+            )}            
+            </div>
           </div>
         </div>
       )}

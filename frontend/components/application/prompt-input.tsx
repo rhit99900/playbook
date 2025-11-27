@@ -9,6 +9,7 @@ import { MermaidDiagram, ResponderAnswerEvent, ResponderContextEvent, ResponderS
 import { useAppSelector } from "@/utils/state/hooks";
 import { RootState } from "@/utils/state/store";
 import MermaidDiagramCard from "./mermaid-diagram";
+import { BookTextIcon, FileCodeCornerIcon } from "lucide-react";
 
 const parseEvent = <T,>(event: MessageEvent): T | null => {
   try {
@@ -202,17 +203,19 @@ const PromptInput = () => {
                 onClick={() => setSourceTarget('docs')}
                 disabled={isStreaming}
               >
-                Drive docs
+                <BookTextIcon />
+                Drive Doc
               </Button>
-              {/* <Button
+              <Button
                 type="button"
                 variant={sourceTarget === 'code' ? 'outline' : 'ghost'}
                 size="sm"
                 onClick={() => setSourceTarget('code')}
                 disabled={isStreaming}
               >
-                GitLab code
-              </Button> */}
+                <FileCodeCornerIcon />
+                GitLab Code
+              </Button>
             </div>
           </div>
           <div className="flex gap-2 flex-row">

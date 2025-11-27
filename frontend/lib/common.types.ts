@@ -78,6 +78,7 @@ export type ChromaStatus = {
 export type SystemStats = {
   embeddedFiles: number;
   chroma: ChromaStatus;
+  chroma_code: ChromaStatus;
 };
 
 export type AuthApiResponse = {
