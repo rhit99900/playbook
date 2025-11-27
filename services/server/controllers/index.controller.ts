@@ -83,15 +83,17 @@ class Playbook {
 
   public getStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const [ embeddedFiles, chroma ] = await Promise.all([
+      const [ embeddedFiles, chroma, chroma_code ] = await Promise.all([
         DocumentService.getEmbeddedDocumentsCount(),
-        getChromaStatus()
+        getChromaStatus(CHROMA_COLLECTION_NAME),
+        getChromaStatus(CHROMA_CODE_COLLECTION_NAME),
       ]);
       res.status(200).send({
         success: true,
         data: {
           embeddedFiles,
-          chroma
+          chroma,
+          chroma_code
         }
       })
     } catch (e) {

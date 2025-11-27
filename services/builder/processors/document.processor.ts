@@ -10,7 +10,7 @@ class DocumentProcessor {
   public process = async (auth: any, file: FileDetails) => {
     
     if(await DocumentService.isDocumentEmbedded(file.id!)) {
-      console.info(`Skipping embedding for ${file.name || file.id} - already embedded`);
+      console.info(`Skipping embedding for "${file.name || file.id}" - already embedded`);
       return;
     }
 
