@@ -197,22 +197,22 @@ const PromptInput = () => {
             <div className="flex gap-1">
               <Button
                 type="button"
-                variant={sourceTarget === 'docs' ? 'default' : 'outline'}
+                variant={sourceTarget === 'docs' ? 'outline' : 'ghost'}
                 size="sm"
                 onClick={() => setSourceTarget('docs')}
                 disabled={isStreaming}
               >
                 Drive docs
               </Button>
-              <Button
+              {/* <Button
                 type="button"
-                variant={sourceTarget === 'code' ? 'default' : 'outline'}
+                variant={sourceTarget === 'code' ? 'outline' : 'ghost'}
                 size="sm"
                 onClick={() => setSourceTarget('code')}
                 disabled={isStreaming}
               >
                 GitLab code
-              </Button>
+              </Button> */}
             </div>
           </div>
           <div className="flex gap-2 flex-row">

@@ -25,6 +25,7 @@ const FilesList = () => {
   const [ pageCount, setPageCount ] = useState<number>(0);
   const [ deletingFileId, setDeletingFileId ] = useState<string | null>(null);
   const [ deleteError, setDeleteError ] = useState<string | null>(null);
+  const [ loadError, setLoadError ] = useState<string | null>(null);
   const [ selectedFiles, setSelectedFiles ] = useState<Set<string>>(new Set());
   const [ bulkDeleting, setBulkDeleting ] = useState<boolean>(false);
   const [ searchValue, setSearchValue ] = useState<string>('');
@@ -70,9 +71,15 @@ const FilesList = () => {
 
   const fetchFileList = async (skip: number, limit: number, token: string, searchTerm?: string) => {
     const query = typeof searchTerm === 'string' ? searchTerm : appliedSearch;
-    const files = await fetchFiles(skip, limit, token, query);
-    setFiles(files.data);
-    setPageCount(typeof files.count === 'number' ? files.count : 0);
+    setLoadError(null);
+    try {
+      const files = await fetchFiles(skip, limit, token, query);
+      setFiles(files.data);
+      setPageCount(typeof files.count === 'number' ? files.count : 0);
+    } catch(error: any) {
+      const message = error?.response?.data?.message || error?.message || 'Unable to fetch files right now.';
+      setLoadError(message);
+    }
   }
 
   const refreshFiles = () => {
@@ -214,6 +221,7 @@ const FilesList = () => {
     <div className="container mx-auto flex flex-col gap-6">
       <EmbedFilesForm token={session?.token} onSuccess={refreshFiles} />
       <div className="overflow-hidden rounded-md">
+        {loadError && <p className="mb-3 text-sm text-destructive">{loadError}</p>}
         {deleteError && <p className="mb-3 text-sm text-destructive">{deleteError}</p>}
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <form onSubmit={handleSearchSubmit} className="flex w-full flex-1 flex-col gap-2 sm:flex-row">

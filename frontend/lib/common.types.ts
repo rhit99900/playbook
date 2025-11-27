@@ -28,6 +28,12 @@ export type SourceAttribution = {
   distance?: number | null;
   fileUrl?: string | null;
   mermaidDiagrams?: string[];
+  path?: string | null;
+  repo?: string | null;
+  branch?: string | null;
+  startLine?: number | null;
+  endLine?: number | null;
+  source?: string | null;
 };
 
 export type ResponderContextEvent = {

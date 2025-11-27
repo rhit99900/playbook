@@ -47,6 +47,7 @@ const Navigation = () => {
             <MenubarTrigger>Admin</MenubarTrigger>
             <MenubarContent>
               <MenubarItem onClick={() => handleNavigation('/admin/files')}>Files</MenubarItem>
+              <MenubarItem onClick={() => handleNavigation('/admin/code')}>Codebases</MenubarItem>
               <MenubarSub>
                 <MenubarSubTrigger>Manager Users</MenubarSubTrigger>
                 <MenubarSubContent>

@@ -1,4 +1,5 @@
-import { DocumentCollection, MetaData } from "../utils/chroma.utils";
+import { CHROMA_COLLECTION_NAME } from "../config";
+import { MetaData, getCollectionByName } from "../utils/chroma.utils";
 import { getEmbeddings } from "./embeddings.model";
 import openai from "./openai";
 
@@ -76,6 +77,12 @@ export type SourceAttribution = {
   distance: number | null;
   fileUrl?: string | null;
   mermaidDiagrams?: string[];
+  path?: string | null;
+  repo?: string | null;
+  branch?: string | null;
+  startLine?: number | null;
+  endLine?: number | null;
+  source?: string | null;
 };
 
 export type RetrievalResult = {
@@ -92,11 +99,13 @@ export type ResponderResult = RetrievalResult & {
 class Responder {
 
   private query: string;
+  private collectionName: string;
   private embeddings: number[][] | undefined;
   private embeddingsPromise: Promise<number[][]> | null = null;
 
-  constructor(query: string) {
+  constructor(query: string, collectionName: string = CHROMA_COLLECTION_NAME) {
     this.query = query;
+    this.collectionName = collectionName;
   }
 
   private async ensureEmbeddings(): Promise<number[][]> {
@@ -107,16 +116,9 @@ class Responder {
     return this.embeddings;
   }
 
-  private assertCollection() {
-    if (!DocumentCollection) {
-      throw new Error('Document collection has not been initialised');
-    }
-    return DocumentCollection;
-  }
-
   public retrieveDocuments = async (nResults: number = 3): Promise<RetrievalResult> => {
     const embeddings = await this.ensureEmbeddings();
-    const collection = this.assertCollection();
+    const collection = await getCollectionByName(this.collectionName);
 
     const results = await collection.query({
       queryEmbeddings: embeddings,
@@ -128,8 +130,17 @@ class Responder {
     const metadatas = results?.metadatas?.[0] ?? [];
     const distances = results?.distances?.[0] ?? [];
 
+    type SourceMetaData = MetaData & {
+      path?: string | null;
+      repo?: string | null;
+      branch?: string | null;
+      startLine?: number | null;
+      endLine?: number | null;
+      source?: string | null;
+    };
+
     const sources: SourceAttribution[] = documents.map((chunk: string, index: number) => {
-      const metadata = metadatas[index] as MetaData | null | undefined;
+      const metadata = metadatas[index] as SourceMetaData | null | undefined;
       const distance = typeof distances[index] === 'number' ? distances[index] : null;
       const mermaidDiagrams = extractMermaidDefinitions(chunk);
       return {
@@ -138,7 +149,13 @@ class Responder {
         chunk,
         distance,
         fileUrl: metadata?.fileUrl,
-        mermaidDiagrams: mermaidDiagrams.length ? mermaidDiagrams : undefined
+        mermaidDiagrams: mermaidDiagrams.length ? mermaidDiagrams : undefined,
+        path: metadata?.path,
+        repo: metadata?.repo,
+        branch: metadata?.branch,
+        startLine: metadata?.startLine,
+        endLine: metadata?.endLine,
+        source: metadata?.source
       };
     });
 
@@ -158,11 +175,23 @@ class Responder {
     });
 
     const contextualisedChunks = sources.map((source, index) => {
-      const header = [
+      const headerParts = [
         `File ID: ${source.documentId ?? 'Unknown'}`,
-        `File Link: ${source.fileUrl ?? 'Unavailable'}`,
-        `Chunk Index: ${source.chunkIndex}`
-      ].join('\n');
+        `Chunk Index: ${source.chunkIndex}`,
+      ];
+
+      if (source.path) {
+        headerParts.push(`Path: ${source.path}`);
+      }
+      if (source.branch) {
+        headerParts.push(`Branch: ${source.branch}`);
+      }
+      if (source.startLine || source.endLine) {
+        headerParts.push(`Lines: ${source.startLine ?? '?'}-${source.endLine ?? '?'}`);
+      }
+      headerParts.push(`File Link: ${source.fileUrl ?? 'Unavailable'}`);
+
+      const header = headerParts.join('\n');
       return `${header}\nContent:\n${source.chunk}`;
     });
 
@@ -197,9 +226,12 @@ class Responder {
     if (!sources.length) return '';
     return sources
       .map((source) => {
-        const fileId = source.documentId ?? 'Unknown';
+        const fileId = source.documentId ?? source.path ?? 'Unknown';
         const fileLink = source.fileUrl ?? 'Link unavailable';
-        return `- File ID ${fileId} -> ${fileLink}`;
+        const location = source.startLine
+          ? ` (lines ${source.startLine}${source.endLine ? `-${source.endLine}` : ''})`
+          : '';
+        return `- ${fileId}${location} -> ${fileLink}`;
       })
       .join('\n');
   }
@@ -210,10 +242,13 @@ class Responder {
     }
     return sources
       .map((source, index) => {
-        const fileId = source.documentId ?? 'Unknown';
+        const fileId = source.documentId ?? source.path ?? 'Unknown';
         const link = source.fileUrl ?? 'Unavailable';
         const distance = typeof source.distance === 'number' ? source.distance.toFixed(4) : 'N/A';
-        return `Source ${index + 1}: File ID=${fileId}, Link=${link}, Chunk Index=${source.chunkIndex}, Distance=${distance}`;
+        const location = source.startLine
+          ? `, Lines=${source.startLine}${source.endLine ? `-${source.endLine}` : ''}`
+          : '';
+        return `Source ${index + 1}: File ID=${fileId}, Path=${source.path ?? 'N/A'}, Link=${link}, Chunk Index=${source.chunkIndex}${location}, Distance=${distance}`;
       })
       .join('\n');
   }

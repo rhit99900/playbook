@@ -4,6 +4,9 @@ import Responder from "../../model/responder";
 import Builder from "../../builder";
 import { authorise, getFilesByIds } from "../../utils/drive.utils";
 import { deleteEmbeddingsByFileIds, getChromaStatus } from "../../utils/chroma.utils";
+import GitlabCodeProcessor from "../../builder/processors/gitlab-code.processor";
+import { GitlabIndexRequest } from "../../types/common.types";
+import { CHROMA_COLLECTION_NAME, CHROMA_CODE_COLLECTION_NAME } from "../../config";
 
 class Playbook {
 
@@ -139,10 +142,61 @@ class Playbook {
     }
   }
 
+  public indexGitlabCode = async (req: Request, res: Response, next: NextFunction) => {
+    const projectId = typeof req.body?.projectId === 'string' ? req.body.projectId.trim() : '';
+    const branch = typeof req.body?.branch === 'string' ? req.body.branch.trim() : '';
+    const token = typeof req.body?.token === 'string' ? req.body.token.trim() : '';
+    const baseUrl = typeof req.body?.baseUrl === 'string' ? req.body.baseUrl.trim() : '';
+    const includeExtensions = Array.isArray(req.body?.includeExtensions)
+      ? req.body.includeExtensions
+          .map((ext: unknown) => typeof ext === 'string' ? ext.trim() : '')
+          .filter((ext: string) => Boolean(ext))
+      : undefined;
+    const rawMaxFiles = typeof req.body?.maxFiles === 'string' ? Number(req.body.maxFiles) : req.body?.maxFiles;
+    const maxFiles = typeof rawMaxFiles === 'number' && rawMaxFiles > 0 ? rawMaxFiles : undefined;
+
+    if (!projectId.length) {
+      return res.status(400).send({
+        success: false,
+        message: 'projectId is required'
+      });
+    }
+
+    const payload: GitlabIndexRequest = {
+      projectId,
+      token: token || undefined,
+      branch: branch || undefined,
+      baseUrl: baseUrl || undefined,
+      includeExtensions: includeExtensions,
+      maxFiles
+    };
+
+    try {
+      const processor = new GitlabCodeProcessor(includeExtensions);
+      const result = await processor.process(payload);
+      res.status(200).send({
+        success: true,
+        data: result
+      });
+    } catch (e: any) {
+      const message = e?.message || 'Failed to index GitLab code';
+      res.status(400).send({
+        success: false,
+        message
+      });
+    }
+  }
+
   public streamResponse = async (req: Request, res: Response, next: NextFunction) => {
     const queryFromBody = typeof req.body?.query === 'string' ? req.body.query : '';
     const queryFromParams = typeof req.query?.query === 'string' ? req.query.query : '';
     const query = (queryFromBody || queryFromParams).trim();
+    const rawSource =
+      typeof req.body?.source === 'string' ? req.body.source :
+      typeof req.query?.source === 'string' ? req.query.source :
+      '';
+    const source = rawSource.toLowerCase() === 'code' ? 'code' : 'docs';
+    const collectionName = source === 'code' ? CHROMA_CODE_COLLECTION_NAME : CHROMA_COLLECTION_NAME;
 
     if (!query.length) {
       return res.status(400).send({
@@ -163,7 +217,7 @@ class Playbook {
       res.write(`data: ${JSON.stringify(payload)}\n\n`);
     };
 
-    const responder = new Responder(query);
+    const responder = new Responder(query, collectionName);
     let streamOpen = true;
 
     const closeStream = () => {
@@ -177,7 +231,7 @@ class Playbook {
     });
 
     try {
-      sendEvent('status', { message: 'Retrieving relevant context from ChromaDB' });
+      sendEvent('status', { message: `Retrieving ${source === 'code' ? 'code' : 'document'} context from ChromaDB` });
       const retrieval = await responder.retrieveDocuments();
       sendEvent('context', {
         context: retrieval.context,

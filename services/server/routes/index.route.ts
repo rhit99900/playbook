@@ -30,6 +30,12 @@ class PlaybookRoutes {
       PlaybookController.getFiles,
     )
 
+    this.router.post(
+      `${this.path}/code/index`,
+      authenticateRequest,
+      PlaybookController.indexGitlabCode
+    )
+
     this.router.get(
       `${this.path}/stats`,
       authenticateRequest,

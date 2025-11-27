@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from '@/utils/api-client';
 import { API_BASE_URI } from './config';
 import { APIResponse, FileDetailsType, AuthApiResponse, AuthSession, LoginPayload, RegisterPayload, AuthUser, DriveFileMetadata, SystemStats } from './common.types';
 
@@ -12,9 +12,7 @@ export const fetchFiles = async (skip: number, limit: number, token: string, sea
     url.searchParams.set('search', search.trim());
   }
   
-  const data = await axios({
-    method: 'get',
-    url: url.href,
+  const data = await apiClient.get(url.href, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -42,7 +40,7 @@ const mapAuthResponse = (response: AuthApiResponse): AuthSession => {
 export const registerUser = async (payload: RegisterPayload, token?: string): Promise<AuthSession> => {
   try {
     const url = new URL('auth/register', API_BASE_URI).href;
-    const { data } = await axios.post<AuthApiResponse>(url, payload, {
+    const { data } = await apiClient.post<AuthApiResponse>(url, payload, {
       headers: token ? {
           Authorization: `Bearer ${token}`
         } : undefined
@@ -55,14 +53,14 @@ export const registerUser = async (payload: RegisterPayload, token?: string): Pr
 
 export const loginUser = async (payload: LoginPayload): Promise<AuthSession> => {
   const url = new URL('auth/login', API_BASE_URI).href;
-  const { data } = await axios.post<AuthApiResponse>(url, payload);
+  const { data } = await apiClient.post<AuthApiResponse>(url, payload);
   return mapAuthResponse(data);
 };
 
 export const getUsers = async (token?: string, filters?: any):Promise<APIResponse<AuthUser[]>> => {
   try {
     const url = new URL('users', API_BASE_URI).href;
-    const { data } = await axios.get(url, {
+    const { data } = await apiClient.get(url, {
       headers: token ? {
         'Authorization': `Bearer ${token}`
       }: undefined
@@ -80,7 +78,7 @@ export const getUsers = async (token?: string, filters?: any):Promise<APIRespons
 export const deleteUser = async (id: number, token?: string): Promise<boolean> => {
   try {
     const url = new URL(`users/${id.toString()}`, API_BASE_URI).href;
-    const { data } = await axios.delete(url, {
+    const { data } = await apiClient.delete(url, {
       headers: token ? {
         Authorization: `Bearer ${token}`
       } : undefined
@@ -98,7 +96,7 @@ export const deleteUser = async (id: number, token?: string): Promise<boolean> =
 export const deleteFile = async (fileId: string, token: string): Promise<boolean> => {
   const encodedId = encodeURIComponent(fileId);
   const url = new URL(`files/${encodedId}`, API_BASE_URI).href;
-  const { data } = await axios.delete<{ success: boolean }>(url, {
+  const { data } = await apiClient.delete<{ success: boolean }>(url, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -109,7 +107,7 @@ export const deleteFile = async (fileId: string, token: string): Promise<boolean
 export const deleteFiles = async (fileIds: string[], token: string): Promise<boolean> => {
   if(!fileIds.length) return false;
   const url = new URL('files', API_BASE_URI).href;
-  const { data } = await axios.delete<{ success: boolean }>(url, {
+  const { data } = await apiClient.delete<{ success: boolean }>(url, {
     headers: {
       Authorization: `Bearer ${token}`
     },
@@ -120,10 +118,20 @@ export const deleteFiles = async (fileIds: string[], token: string): Promise<boo
   return data.success;
 }
 
+export const indexGitlabRepository = async (payload: Record<string, any>, token: string) => {
+  const url = new URL('code/index', API_BASE_URI).href;
+  const { data } = await apiClient.post(url, payload, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return data;
+}
+
 export const lookupDriveFile = async (fileId: string, token: string): Promise<DriveFileMetadata> => {
   const encodedId = encodeURIComponent(fileId);
   const url = new URL(`files/lookup/${encodedId}`, API_BASE_URI).href;
-  const { data } = await axios.get<APIResponse<DriveFileMetadata>>(url, {
+  const { data } = await apiClient.get<APIResponse<DriveFileMetadata>>(url, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -133,7 +141,7 @@ export const lookupDriveFile = async (fileId: string, token: string): Promise<Dr
 
 export const indexFilesForEmbedding = async (fileIds: string[], token: string): Promise<{ success: boolean; message?: string; fileIds?: string[] }> => {
   const url = new URL('files/index', API_BASE_URI).href;
-  const { data } = await axios.post(url, { fileIds }, {
+  const { data } = await apiClient.post(url, { fileIds }, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -143,7 +151,7 @@ export const indexFilesForEmbedding = async (fileIds: string[], token: string): 
 
 export const fetchSystemStats = async (token: string): Promise<SystemStats> => {
   const url = new URL('stats', API_BASE_URI).href;
-  const { data } = await axios.get<APIResponse<SystemStats>>(url, {
+  const { data } = await apiClient.get<APIResponse<SystemStats>>(url, {
     headers: {
       Authorization: `Bearer ${token}`
     }

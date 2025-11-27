@@ -33,3 +33,12 @@ export type UsersList = {
   users: UsersParams[],
   count: number;
 }
+
+export type GitlabIndexRequest = {
+  projectId: string;
+  token?: string;
+  branch?: string;
+  baseUrl?: string;
+  includeExtensions?: string[];
+  maxFiles?: number;
+}

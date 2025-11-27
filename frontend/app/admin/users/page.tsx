@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { deleteUser, getUsers } from "@/lib/apis";
 import type { RootState } from "@/utils/state/store";
-import { setCredentials, setUserAuthState, signOut } from "@/utils/slices/auth";
+import { setCredentials, setUserAuthState } from "@/utils/slices/auth";
 import { readAuthSession } from "@/utils/auth-storage";
 import { useAppDispatch, useAppSelector } from "@/utils/state/hooks";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from "@/co
 import { AuthUser } from "@/lib/common.types";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { DeleteIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 
 
 const UserList = () => {
@@ -23,6 +23,7 @@ const UserList = () => {
   const router = useRouter();
 
   const [ users, setUsers ] = useState<AuthUser[]>([]);
+  const [ loadError, setLoadError ] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session) {
@@ -57,9 +58,15 @@ const UserList = () => {
   }, [authState, session])
 
   const fetchUsersList = async (token?: string) => {
-    const users = await getUsers(token);
-    if(users.success) {
-      setUsers(users.data);
+    setLoadError(null);
+    try {
+      const users = await getUsers(token);
+      if(users.success) {
+        setUsers(users.data);
+      }
+    } catch(error: any) {
+      const message = error?.response?.data?.message || error?.message || 'Failed to fetch users.';
+      setLoadError(message);
     }
   }
 
@@ -70,8 +77,13 @@ const UserList = () => {
   }
 
   const remove = async (id: number) => {
-    await deleteUser(id, session?.token);
-    await fetchUsersList(session?.token);
+    try {
+      await deleteUser(id, session?.token);
+      await fetchUsersList(session?.token);
+    } catch (error: any) {
+      const message = error?.response?.data?.message || error?.message || 'Unable to delete the user.';
+      setLoadError(message);
+    }
   }
 
   return (
@@ -89,6 +101,7 @@ const UserList = () => {
         </div>
 
         <div className="mt-2.5 flex flex-col gap-2.5">
+          {loadError ? <p className="text-sm text-red-600 dark:text-red-400">{loadError}</p> : null}
           {users && users.length ? (
             users.map((user) => {
               return (
