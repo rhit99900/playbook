@@ -28,7 +28,7 @@ const LoginPage = () => {
         dispatch(setCredentials(stored));
       }
     } else {
-      router.prefetch("/admin/add-user");
+      router.prefetch("/admin/files");
     }
   }, [session, dispatch, router]);
 

@@ -53,7 +53,7 @@ const EmbedRepoForm = () => {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!session?.token || !form.projectId.trim().length) return;
+    if (!session?.token || !form.projectId.trim().length || !form.token.trim().length) return;
     setSubmitting(true);
     setError(null);
     setSuccess(null);
@@ -109,7 +109,7 @@ const EmbedRepoForm = () => {
           <Label htmlFor="projectId">Project ID *</Label>
           <Input
             id="projectId"
-            placeholder="12345 or namespace%2Fslug"
+            placeholder="12345 or namespace"
             value={form.projectId}
             onChange={handleChange("projectId")}
             required
@@ -119,13 +119,13 @@ const EmbedRepoForm = () => {
           <Label htmlFor="branch">Branch (optional)</Label>
           <Input
             id="branch"
-            placeholder="main"
+            placeholder="Default Branch: master"
             value={form.branch}
             onChange={handleChange("branch")}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="token">GitLab Token (optional)</Label>
+          <Label htmlFor="token">GitLab Token *</Label>
           <Input
             id="token"
             placeholder="Overrides server token"
@@ -138,7 +138,7 @@ const EmbedRepoForm = () => {
           <Label htmlFor="baseUrl">GitLab Base URL (optional)</Label>
           <Input
             id="baseUrl"
-            placeholder="https://gitlab.yourcompany.com"
+            placeholder="Organisation URL (incase it's self-hosted) https://gitlab.yourcompany.com"
             value={form.baseUrl}
             onChange={handleChange("baseUrl")}
           />
