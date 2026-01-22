@@ -22,6 +22,7 @@ jobs:
       SSH_USER: ${{ secrets.SSH_USER }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
       RESTART_CMD: ${{ secrets.RESTART_CMD }}
+      NEXT_PUBLIC_API_BASE_URI: ${{ secrets.NEXT_PUBLIC_API_BASE_URI }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,8 +59,3 @@ jobs:
             "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"
         env:
           RSYNC_RSH: "ssh -p ${{ env.SSH_PORT }}"
-
-      - name: Install prod deps and restart
-        run: |
-          ssh -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" \
-            "cd ${DEPLOY_PATH} && npm ci --omit=dev && ${RESTART_CMD}"
