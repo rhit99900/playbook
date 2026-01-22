@@ -46,6 +46,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
+
       - name: Deploy artifacts
         run: |
           rsync -az --delete \
