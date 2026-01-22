@@ -56,7 +56,7 @@ jobs:
             frontend/next.config.ts \
             "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"
         env:
-          RSYNC_RSH: "ssh -p ${SSH_PORT}"
+          RSYNC_RSH: "ssh -p ${{ env.SSH_PORT }}"
 
       - name: Install prod deps and restart
         run: |
